@@ -1,1 +1,13 @@
 @import "tailwindcss";
+:root {
+  --bg-main: #121417;
+  --bg-deep: #0b0d10;
+
+  --text-main: #fcfcfd;
+  --text-muted: #7e889a;
+
+  --border-main: #58606f;
+
+  /* accent (for subtle glow only) */
+  --accent-soft: rgba(75, 255, 178, 0.1);
+}
