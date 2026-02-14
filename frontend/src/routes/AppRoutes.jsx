@@ -12,6 +12,9 @@ import Hiring from "../pages/Hiring/Hiring";
 import Attendance from "../pages/Attendance/Attendance";
 import Leave from "../pages/Leave/Leave";
 import Performance from "../pages/Performance/Performance";
+import DepartmentList from "../components/department/DepartmentList";
+import AddDepartment from "../components/department/AddDepartment";
+
 
 
 export const router = createBrowserRouter([
@@ -47,6 +50,11 @@ export const router = createBrowserRouter([
         path: "leave",
         element: <Leave />
       },
+      {
+        path: "add-department",
+        element: <AddDepartment />
+      },
+    
       {
         path: "performance",
         element: <Performance/>

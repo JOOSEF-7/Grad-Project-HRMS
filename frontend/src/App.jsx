@@ -1,5 +1,6 @@
 import { RouterProvider } from "react-router";
 import { router } from "./routes/AppRoutes";
+import SuccessCard from "./components/employees/AddEmployee/SuccessCard";
 
 export default function App() {
   return (
@@ -17,9 +18,11 @@ export default function App() {
       {/* Soft accent (very subtle) */}
       <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[var(--accent-soft)]" />
       {/* App content */}
+      
       <div className="relative z-10">
         <RouterProvider router={router} />
       </div>
+      
 
     </div>
   );
