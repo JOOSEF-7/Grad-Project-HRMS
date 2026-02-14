@@ -9,7 +9,7 @@
 
 - **هيكلية Project منظمة** حسب أفضل ممارسات المشاريع الكبيرة
 - **Tailwind CSS** جاهز للتعديل
-- **React Router v6** جاهز مع صفحات Login / Register / About / Home
+- **React Router v6** جاهز مع صفحات Login  / About / Home
 - **Navbar و Footer** جاهزين وقابلين لإعادة الاستخدام
 - **Auth Flow** جاهز كـ Feature مع Pages + Components + Store + Services
 - **Axios** للتعامل مع الـ API
