@@ -1,61 +1,55 @@
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "../../services/axios";
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../services/axios';
-
-// ============================================
 // 1. جلب كل المتقدمين
-// ============================================
 export const fetchAllApplicants = createAsyncThunk(
-  'hiring/fetchAll', 
+  "hiring/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
       // ✅ المسار الصحيح: /api/hiring
-      const response = await axios.get('/hiring');
+      const response = await axios.get("/hiring");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch applicants");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch applicants",
+      );
     }
-  }
+  },
 );
 
-// ============================================
 // 2. البحث في المتقدمين
-// ============================================
 export const searchHiring = createAsyncThunk(
-  'hiring/search',
+  "hiring/search",
   async (query, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/hiring/search
+      // /api/hiring/search
       const response = await axios.get(`/hiring/search?query=${query}`);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Search failed");
     }
-  }
+  },
 );
 
-// ============================================
-// الـ Slice
-// ============================================
 const hiringSlice = createSlice({
-  name: 'hiring',
-  initialState: { 
+  name: "hiring",
+  initialState: {
     list: [],
     searchResults: [],
     loading: false,
     searchLoading: false,
-    error: null 
+    error: null,
   },
   reducers: {
-    clearHiringSearch: (state) => { 
+    clearHiringSearch: (state) => {
       state.searchResults = [];
       state.searchLoading = false;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
       // جلب كل المتقدمين
-      .addCase(fetchAllApplicants.pending, (state) => { 
+      .addCase(fetchAllApplicants.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -69,7 +63,7 @@ const hiringSlice = createSlice({
         state.list = [];
       })
       // البحث
-      .addCase(searchHiring.pending, (state) => { 
+      .addCase(searchHiring.pending, (state) => {
         state.searchLoading = true;
       })
       .addCase(searchHiring.fulfilled, (state, action) => {
@@ -80,7 +74,7 @@ const hiringSlice = createSlice({
         state.searchLoading = false;
         state.error = action.payload;
       });
-  }
+  },
 });
 
 export const { clearHiringSearch } = hiringSlice.actions;

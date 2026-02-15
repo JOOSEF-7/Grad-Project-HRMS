@@ -2,10 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-
 import { toggleSidebar } from "../../store/slices/navbar/sideMenuSlice";
 
-// استيراد المكونات الفرعية
+// components
 import NavSearchTrigger from "../NavbarComponents/NavSearchTrigger";
 import NotificationDropdown from "../NavbarComponents/NotificationDropdown";
 import ProfileDropdown from "../NavbarComponents/ProfileDropdown";
@@ -13,36 +12,28 @@ import SearchModal from "../NavbarComponents/SearchModal";
 
 const Navbar = () => {
   const dispatch = useDispatch();
-    const navigate = useNavigate();
-  
+  const navigate = useNavigate();
 
-  // جلب حالة السايد بار من Redux
   const isCollapsed = useSelector((state) => state.ui.isSidebarCollapsed);
 
-  // States محلية للتحكم في القوائم المنسدلة
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
-  // Refs للإغلاق عند الضغط خارج القوائم
   const profileRef = useRef(null);
   const notifRef = useRef(null);
   const searchRef = useRef(null);
 
-  // منطق إغلاق القوائم عند الضغط بالخارج
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // إغلاق قائمة البروفايل
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setShowProfileMenu(false);
       }
 
-      // إغلاق قائمة الإشعارات
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setShowNotifMenu(false);
       }
 
-      // إغلاق مودال البحث
       if (
         isSearchModalOpen &&
         searchRef.current &&
@@ -58,7 +49,7 @@ const Navbar = () => {
 
   return (
     <>
-      {/* شريط الـ Navbar */}
+      {/* Navbar */}
       <nav
         style={{
           left: isCollapsed ? "70px" : "175px",
@@ -73,16 +64,15 @@ const Navbar = () => {
             className="text-gray-400 hover:text-white transition-all transform hover:scale-110"
             title="Toggle Sidebar"
           >
-            <i className="fas fa-bars text-xl" ></i>
+            <i className="fas fa-bars text-xl"></i>
           </button>
 
-          {/* زر البحث (يفتح المودال) */}
           <NavSearchTrigger onClick={() => setIsSearchModalOpen(true)} />
         </div>
 
         {/* --- الجانب الأيمن: الإعدادات والإشعارات والبروفايل --- */}
         <div className="flex items-center gap-4">
-          {/* زر الإعدادات (اختياري) */}
+          {/* زر الإعدادات  */}
           <button
             className="w-10 h-10 bg-[#142129] rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all"
             title="Settings"

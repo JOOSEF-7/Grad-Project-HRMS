@@ -10,21 +10,21 @@
 
   /* accent (for subtle glow only) */
   --accent-soft: rgba(75, 255, 178, 0.1);
-
-
---bg-components:linear-gradient(135deg, #1e2936 0%, #1a2332 100%)
-  /* --bg-components: bg-gradient-to-br from-[#a7ceff]/40 to-25%  to-[#142129]; */
 }
 
 @keyframes flash-animation {
-  0% { background-color: transparent; }
-  30% { 
-    background-color: rgba(59, 130, 246, 0.15); 
-    border-color: #3b82f6; 
+  0% {
+    background-color: transparent;
+  }
+  30% {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
     box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
     transform: scale(1.02);
   }
-  100% { background-color: transparent; }
+  100% {
+    background-color: transparent;
+  }
 }
 
 .flash-highlight {
@@ -33,12 +33,10 @@
   position: relative;
 }
 
-
-
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

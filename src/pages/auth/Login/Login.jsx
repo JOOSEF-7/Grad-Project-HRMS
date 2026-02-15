@@ -4,10 +4,13 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
 
+import {
+  loginUser,
+  checkEmailStatus,
+} from "../../../store/slices/auth/loginSlice";
+
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../../store/slices/loginAuth/loginAuthSlice";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "../../../services/axios";
 
 import icon from "../../../assets/icons/Icon.svg";
 import loginSide from "../../../assets/loginImg/loginSide.avif";
@@ -15,6 +18,7 @@ import loginSide from "../../../assets/loginImg/loginSide.avif";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const { loading } = useSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -33,15 +37,19 @@ const Login = () => {
     }),
     onSubmit: (values) => {
       setPassError("");
+      setEmailError("");
+
       dispatch(loginUser(values)).then((res) => {
         if (!res.error) {
           setIsRedirecting(true);
           setTimeout(() => navigate("/dashboard"), 2000);
         } else {
-          if (res.payload?.message?.toLowerCase().includes("password")) {
-            setPassError(res.payload.message);
+          const errorMsg = res.payload?.message || "Login failed";
+
+          if (errorMsg.toLowerCase().includes("password")) {
+            setPassError(errorMsg);
           } else {
-            setEmailError(res.payload?.message || "Login failed");
+            setEmailError(errorMsg);
           }
         }
       });
@@ -67,20 +75,21 @@ const Login = () => {
       return;
     }
 
-    const delayDebounceFn = setTimeout(async () => {
-      try {
-        await axios.post("/auth/check-email", { email: emailValue });
-        setEmailError("");
-        setIsEmailValid(true);
-      } catch (err) {
-        setEmailError(err.response?.data?.message || "Email not found");
-        setIsEmailValid(false);
-      }
-    }, 500);
+    const delayDebounceFn = setTimeout(() => {
+      // 💡 بننادي السلايس دلوقتي بدل أكسيوس مباشرة
+      dispatch(checkEmailStatus(emailValue)).then((res) => {
+        if (!res.error) {
+          setEmailError("");
+          setIsEmailValid(true);
+        } else {
+          setEmailError(res.payload || "Email not found");
+          setIsEmailValid(false);
+        }
+      });
+    }, 600);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [formik.values.email, formik.errors.email]);
-
+  }, [formik.values.email, dispatch]);
   return (
     <>
       <AnimatePresence>
@@ -117,14 +126,8 @@ const Login = () => {
               transition={{ delay: 0.3, type: "spring" }}
               className="flex justify-center mb-6"
             >
-              <div className="bg-blue-600/10 w-14 h-14 rounded-full flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-                <div className="w-13.5 h-13.5 ml-[0.5px] mt-[0.5px] bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-500/30">
-                  <img
-                    src={icon}
-                    alt="Staffly Logo"
-                    className="ml-[2px] mb-[2.75px] w-13 h-13"
-                  />
-                </div>
+              <div className="bg-blue-600/10 w-16 h-16 rounded-full flex items-center justify-center border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+                <img src={icon} alt="Staffly Logo" className="w-10 h-10" />
               </div>
             </motion.div>
 
@@ -153,7 +156,7 @@ const Login = () => {
                   type="email"
                   className={`w-full bg-[#1e293b] p-3.5 rounded-xl border outline-none transition-all ${
                     emailError
-                      ? "border-red-500/50"
+                      ? "border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.05)]"
                       : "border-transparent focus:border-blue-500"
                   }`}
                   {...formik.getFieldProps("email")}
@@ -167,12 +170,14 @@ const Login = () => {
                       exit={{ height: 0, opacity: 0 }}
                       className="text-red-400 text-[11px] mt-1.5 ml-1 italic font-medium"
                     >
+                      <i className="fas fa-exclamation-circle mr-1"></i>{" "}
                       {emailError}
                     </motion.p>
                   )}
                 </AnimatePresence>
               </div>
 
+              {/* حقل الباسورد */}
               <div>
                 <label className="block text-xs text-gray-400 mb-1.5 ml-1">
                   Password
@@ -184,7 +189,7 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     className={`w-full bg-[#1e293b] p-3.5 rounded-xl border outline-none transition-all ${
                       passError
-                        ? "border-red-500/50"
+                        ? "border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.05)]"
                         : "border-transparent focus:border-blue-500"
                     }`}
                     {...formik.getFieldProps("password")}
@@ -208,6 +213,7 @@ const Login = () => {
                       exit={{ height: 0, opacity: 0 }}
                       className="text-red-400 text-[11px] mt-1.5 ml-1 italic font-medium"
                     >
+                      <i className="fas fa-exclamation-circle mr-1"></i>{" "}
                       {passError}
                     </motion.p>
                   )}
@@ -217,24 +223,27 @@ const Login = () => {
               <div className="text-right">
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-gray-500 hover:text-white transition-colors"
+                  className="text-xs text-gray-400 hover:text-white transition-colors"
                 >
-                  Forgot
-                  <span className="text-blue-500 cursor-pointer hover:text-white">
-                    {" "}
-                    password?{" "}
-                  </span>
+                  Forgot{" "}
+                  <span className="text-blue-500 font-bold">password?</span>
                 </Link>
               </div>
 
+              {/* زر تسجيل الدخول الذكي */}
               <motion.button
                 whileHover={
-                  isEmailValid && formik.values.password ? { scale: 1.01 } : {}
+                  isEmailValid && formik.values.password && !passError
+                    ? { scale: 1.01 }
+                    : {}
                 }
                 whileTap={
-                  isEmailValid && formik.values.password ? { scale: 0.99 } : {}
+                  isEmailValid && formik.values.password && !passError
+                    ? { scale: 0.99 }
+                    : {}
                 }
                 type="submit"
+                // الزرار يتعطل لو فيه خطأ في الإيميل أو الباسورد أو لو لسه بيحمل
                 disabled={
                   loading ||
                   !isEmailValid ||
@@ -248,8 +257,8 @@ const Login = () => {
                   !passError &&
                   !emailError &&
                   !loading
-                    ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
-                    : "bg-[#2d3a4f] text-gray-500 cursor-not-allowed"
+                    ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20 cursor-pointer"
+                    : "bg-[#2d3a4f] text-gray-500 cursor-not-allowed shadow-none"
                 }`}
               >
                 {loading ? (
@@ -268,10 +277,6 @@ const Login = () => {
               </motion.button>
             </form>
 
-            <div className="mt-10 relative flex items-center justify-center">
-              <div className="w-full border-t border-gray-800"></div>
-            </div>
-
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -279,7 +284,7 @@ const Login = () => {
               className="text-center mt-10 text-xs text-gray-500"
             >
               Start Your{" "}
-              <span className="text-blue-500 cursor-pointer">
+              <span className="text-blue-500 font-bold">
                 Dashboard Management
               </span>{" "}
               Time Now !!
@@ -287,6 +292,7 @@ const Login = () => {
           </div>
         </motion.div>
 
+        {/* الجانب الأيمن - الصورة الثابتة */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -294,44 +300,28 @@ const Login = () => {
           className="hidden lg:flex w-1/2 p-4"
         >
           <div
-            className="w-full h-full rounded-[2rem] bg-cover bg-center flex flex-col justify-end p-12 relative overflow-hidden shadow-2xl"
+            className="w-full h-full rounded-[2.5rem] bg-cover bg-center flex flex-col justify-end p-12 relative overflow-hidden shadow-2xl"
             style={{
               backgroundImage: `linear-gradient(to bottom, transparent, #000000dd), url(${loginSide})`,
             }}
           >
-            <motion.h2
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="text-4xl font-bold mb-4 z-10 leading-tight"
-            >
+            <h2 className="text-4xl font-bold mb-4 z-10 leading-tight">
               It's time to make employee management easier and faster
-            </motion.h2>
-            <motion.p
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="text-gray-300 z-10 max-w-sm mb-6"
-            >
+            </h2>
+            <p className="text-gray-300 z-10 max-w-sm mb-6 font-light">
               Manage attendance, leave, employee data, and payroll all in one
               simple and reliable app.
-            </motion.p>
+            </p>
 
-            <div className="flex items-center gap-3 z-10 border-t border-gray-700/50 pt-6">
-              {/* <div className="flex -space-x-3">
-                
-              </div> */}
-              <div className="flex gap-1">
-                <motion.div
-                  animate={{ width: [8, 24, 8] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="h-1 w-2 bg-gray-600 rounded-full"
-                >
-                  <div className="h-1 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
-                </motion.div>
-                <div className="h-1 w-2 bg-gray-600 rounded-full"></div>
-                <div className="h-1 w-2 bg-gray-600 rounded-full"></div>
-              </div>
+            {/* مؤشر الحالة (Dots) */}
+            <div className="flex gap-1.5 z-10">
+              <motion.div
+                animate={{ width: [8, 24, 8] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+              ></motion.div>
+              <div className="h-1.5 w-2 bg-gray-700 rounded-full"></div>
+              <div className="h-1.5 w-2 bg-gray-700 rounded-full"></div>
             </div>
           </div>
         </motion.div>

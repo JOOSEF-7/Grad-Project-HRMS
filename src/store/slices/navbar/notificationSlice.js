@@ -1,89 +1,79 @@
-
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../../services/axios";
 import { updateLeaveStatus } from "../leaveSlice";
 
-// ============================================
 // 1. جلب كل الإشعارات
-// ============================================
 export const fetchNotifications = createAsyncThunk(
   "notifications/fetch",
   async (_, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/notifications (مش /notifications/notifications)
       const response = await axios.get("/notifications");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch notifications");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch notifications",
+      );
     }
-  }
+  },
 );
 
-// ============================================
 // 2. تعليم إشعار واحد كمقروء
-// ============================================
 export const markAsRead = createAsyncThunk(
   "notifications/markRead",
   async (id, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/notifications/:id/read
       await axios.patch(`/notifications/${id}/read`);
       return id;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to mark as read");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to mark as read",
+      );
     }
-  }
+  },
 );
 
-// ============================================
 // 3. تعليم كل الإشعارات كمقروءة
-// ============================================
 export const markAllAsRead = createAsyncThunk(
   "notifications/markAllRead",
   async (_, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/notifications/read-all
       await axios.patch("/notifications/read-all");
       return true;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to mark all as read");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to mark all as read",
+      );
     }
-  }
+  },
 );
 
-// ============================================
 // 4. التعامل مع الموافقة/الرفض
-// ============================================
 export const handleNotificationAction = createAsyncThunk(
   "notifications/handleAction",
   async ({ id, actionStatus }, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/notifications/:id/action
       await axios.patch(`/notifications/${id}/action`, { actionStatus });
       return { id, actionStatus };
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Action failed");
     }
-  }
+  },
 );
 
-// ============================================
 // الـ Slice
-// ============================================
 const notificationSlice = createSlice({
   name: "notifications",
-  initialState: { 
-    list: [], 
-    loading: false, 
+  initialState: {
+    list: [],
+    loading: false,
     unreadCount: 0,
-    error: null
+    error: null,
   },
   reducers: {
     clearNotifications: (state) => {
       state.list = [];
       state.unreadCount = 0;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -96,7 +86,7 @@ const notificationSlice = createSlice({
         state.loading = false;
         state.list = action.payload || [];
         state.unreadCount = (action.payload || []).filter(
-          (n) => n?.status === "unread"
+          (n) => n?.status === "unread",
         ).length;
       })
       .addCase(fetchNotifications.rejected, (state, action) => {
@@ -133,11 +123,12 @@ const notificationSlice = createSlice({
       .addCase(updateLeaveStatus.fulfilled, (state, action) => {
         const { id, status } = action.payload;
         const relatedNotif = state.list.find(
-          (n) => n.targetId == id && n.type === "leave"
+          (n) => n.targetId == id && n.type === "leave",
         );
 
         if (relatedNotif) {
-          relatedNotif.actionStatus = status === "Approved" ? "accepted" : "rejected";
+          relatedNotif.actionStatus =
+            status === "Approved" ? "accepted" : "rejected";
           if (relatedNotif.status === "unread") {
             relatedNotif.status = "read";
             state.unreadCount = Math.max(0, state.unreadCount - 1);

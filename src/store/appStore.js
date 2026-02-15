@@ -1,10 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-// ============================================
-// استيراد كل الـ Reducers
-// ============================================
-// Auth
-import authReducer from "./slices/loginAuth/loginAuthSlice";
+import loginReducer from "./slices/auth/loginSlice";
+import forgotPasswordReducer from "./slices/auth/forgotPasswordSlice";
+import verifyCodeReducer from "./slices/auth/verifyCodeSlice";
 
 // Navbar
 import notificationReducer from "./slices/navbar/notificationSlice";
@@ -21,20 +19,18 @@ import projectReducer from "./slices/projectSlice";
 import hiringReducer from "./slices/hiringSlice";
 import leaveReducer from "./slices/leaveSlice";
 
-// ============================================
-// إنشاء الـ Store
-// ============================================
 export const store = configureStore({
   reducer: {
     // Authentication
-    auth: authReducer,
+    auth: loginReducer,
+    forgotPassword: forgotPasswordReducer,
+    verifyCode: verifyCodeReducer,
 
     // Navbar Features
     ui: uiReducer,
     search: searchReducer,
     notifications: notificationReducer,
     hrProfile: hrProfileReducer,
-
 
     // Dashboard
     dashboard: dashboardReducer,
@@ -45,15 +41,6 @@ export const store = configureStore({
     leaves: leaveReducer,
     hiring: hiringReducer,
   },
-  
-  // Middleware Configuration (اختياري)
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        // تجاهل بعض الأكشنز إذا كانت تحتوي على قيم non-serializable
-        ignoredActions: ['persist/PERSIST'],
-      },
-    }),
 });
 
 export default store;

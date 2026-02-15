@@ -2,24 +2,22 @@ import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDashboardAnalytics } from "../../store/slices/mainDashboard/dashboardSlice";
 
-//  المكونات 
+//  components
 import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
 import StatsCards from "../../components/DashboardComponents/StatsCards";
-import TaskSummary from "../../components/DashboardComponents/TaskSummary";
 import AttendanceReport from "../../components/DashboardComponents/AttendanceReport";
 import EmployeeStatus from "../../components/DashboardComponents/EmployeeStatus";
 import JobApplicants from "../../components/DashboardComponents/JobApplicants";
+import TaskSummary from "../../components/DashboardComponents/TaskSummary";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const dashboardRef = useRef(null); 
+  const dashboardRef = useRef(null);
 
-  // جلب البيانات من Redux
   const { selectedDate, analytics, loading, error } = useSelector(
     (state) => state.dashboard,
   );
 
-  // جلب البيانات عند تغيير التاريخ
   useEffect(() => {
     dispatch(fetchDashboardAnalytics(selectedDate));
   }, [selectedDate, dispatch]);
@@ -60,31 +58,29 @@ const Dashboard = () => {
   }
 
   return (
-    <div ref={dashboardRef} className="max-w-[1650px] mx-auto p-4 bg-transparent">
-      {/* بنبعت الـ Ref لـ DashboardHeader عشان لما يضغط Export يعرف هيصور إيه */}
+    <div
+      ref={dashboardRef}
+      className="max-w-[1650px] mx-auto p-4 bg-transparent"
+    >
       <DashboardHeader printRef={dashboardRef} />
 
       <div className="grid grid-cols-12 gap-8">
-        {/* الجانب الأيسر (الرئيسي): 8 أعمدة */}
         <div className="col-span-12 lg:col-span-8 space-y-8">
-          {/* بطاقات الإحصائيات */}
           <StatsCards stats={analytics?.stats} />
 
-          {/* تقرير الحضور */}
           <AttendanceReport
             title={"Attendance report"}
             desc={"Real-time employee attendance report"}
             data={analytics?.attendanceReport}
           />
 
-          {/* الصف السفلي في الجانب الأيسر */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <EmployeeStatus data={analytics?.employeeStatus} />
             <JobApplicants applicants={analytics?.recentApplicants} />
           </div>
         </div>
 
-        {/* الجانب الأيمن (Task Summary): 4 أعمدة */}
+        {/* (Task Summary)*/}
         <div className="col-span-12 lg:col-span-4">
           <TaskSummary data={analytics?.taskSummary} />
         </div>

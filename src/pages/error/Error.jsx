@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 
-// --- استيراد الصور (تأكدي من صحة المسارات في جهازك) ---
 import icon from "../../assets/icons/icon.svg";
 import ufoIcon from "../../assets/ufo/ufo.svg";
 
@@ -11,8 +10,6 @@ const Error = () => {
 
   return (
     <div className="min-h-screen bg-[#0b141a] flex flex-col items-center justify-center px-6 relative overflow-hidden text-white font-sans">
-      {/* 1. الهيدر (اللوجو) */}
-      {/* <div className="absolute top-8 left-8 flex items-center gap-2"> */}
       <NavLink
         to="/dashboard"
         className="absolute top-8 left-8 flex items-center gap-2 cursor-pointer group transition-transform hover:scale-105"
@@ -23,12 +20,9 @@ const Error = () => {
         <span className="text-xl font-bold tracking-tight italic">
           Staf<span className="text-blue-500 cursor-pointer">fly</span>
         </span>
-        {/* </div> */}
       </NavLink>
 
-      {/* 2. منطقة الـ 404 والـ UFO */}
       <div className="relative flex items-center justify-center mb-12">
-        {/* نص 404 كبير وخلفي */}
         <motion.h1
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.1, scale: 1 }}
@@ -38,7 +32,6 @@ const Error = () => {
           404
         </motion.h1>
 
-        {/* حركة الـ UFO الطائر */}
         <motion.div
           animate={{
             y: [0, -2, 0],
@@ -52,20 +45,17 @@ const Error = () => {
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
         >
           <div className="relative">
-            {/* الصورة الفعلية لليوفو */}
             <img
               src={ufoIcon}
               alt="UFO"
               className="w-40 md:w-60 relative z-20 drop-shadow-[0_20px_50px_rgba(59,130,246,0.5)]"
             />
 
-            {/* تأثير الضوء (الهالة) تحت اليوفو */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-20 h-40 bg-gradient-to-b from-blue-500/30 to-transparent blur-xl z-10"></div>
           </div>
         </motion.div>
       </div>
 
-      {/* 3. النصوص والزرار */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -79,7 +69,6 @@ const Error = () => {
           It might have been abducted, or simply doesn't exist.
         </p>
 
-        {/* زرار العودة للهوم بموشن تفاعلي */}
         <motion.button
           whileHover={{ scale: 1.05, backgroundColor: "#0081dd" }}
           whileTap={{ scale: 0.95 }}

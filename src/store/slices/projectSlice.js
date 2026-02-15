@@ -1,29 +1,25 @@
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "../../services/axios";
 
-
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../services/axios';
-
-// ============================================
 // جلب كل المشاريع
-// ============================================
 export const fetchAllProjects = createAsyncThunk(
-  'projects/fetchAll', 
+  "projects/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
       // ✅ المسار الصحيح: /api/projects (مش /projects/projects)
-      const response = await axios.get('/projects');
+      const response = await axios.get("/projects");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch projects");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch projects",
+      );
     }
-  }
+  },
 );
 
-// ============================================
 // البحث في المشاريع
-// ============================================
 export const searchProjects = createAsyncThunk(
-  'projects/search',
+  "projects/search",
   async (query, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/projects/search?query=${query}`);
@@ -31,31 +27,28 @@ export const searchProjects = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Search failed");
     }
-  }
+  },
 );
 
-// ============================================
 // الـ Slice
-// ============================================
 const projectSlice = createSlice({
-  name: 'projects',
-  initialState: { 
+  name: "projects",
+  initialState: {
     list: [],
     searchResults: [],
     loading: false,
     searchLoading: false,
-    error: null
+    error: null,
   },
   reducers: {
     clearProjectSearch: (state) => {
       state.searchResults = [];
       state.searchLoading = false;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
-      // جلب كل المشاريع
-      .addCase(fetchAllProjects.pending, (state) => { 
+      .addCase(fetchAllProjects.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -80,7 +73,7 @@ const projectSlice = createSlice({
         state.searchLoading = false;
         state.error = action.payload;
       });
-  }
+  },
 });
 
 export const { clearProjectSearch } = projectSlice.actions;

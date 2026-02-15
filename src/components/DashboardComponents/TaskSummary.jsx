@@ -38,13 +38,11 @@ const TaskSummary = ({ data = [] }) => {
         ))}
       </div>
 
-      {/* منطقة السكرول - السكرول هنا خفي ومساحته محكومة بـ max-h */}
       <div className="space-y-6 overflow-y-auto scrollbar-hide flex-1 pr-1 max-h-[1170px]">
         {filteredTasks.length > 0 ? (
           filteredTasks.map((task) => (
             <div
               key={task.id}
-              // التوجيه لصفحة المشاريع مع الوميض عند الضغط
               onClick={() => navigate(`/project?highlightId=${task.id}`)}
               className="group border-b border-gray-800/40 pb-6 last:border-0 hover:bg-white/[0.01] cursor-pointer transition-all p-2 rounded-xl"
             >
@@ -77,7 +75,6 @@ const TaskSummary = ({ data = [] }) => {
 
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4 text-[10px] text-gray-300 font-black">
-                  {/* الأعداد قادمة محسوبة من الباك إند */}
                   <span>
                     <i className="far fa-comment-alt mr-1"></i>{" "}
                     {task.commentsCount || 0}

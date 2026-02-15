@@ -1,14 +1,10 @@
-
-import { Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children }) => {
-  // جلب البيانات من Redux
   const { token, user, loading } = useSelector((state) => state.auth);
 
-  // ============================================
   // حالة التحميل
-  // ============================================
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b141a]">
@@ -20,17 +16,13 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // ============================================
   // 1. التحقق من وجود التوكن
-  // ============================================
-  if (!token || token === 'undefined' || token === 'null') {
+  if (!token || token === "undefined" || token === "null") {
     return <Navigate to="/login" replace />;
   }
 
-  // ============================================
   // 2. التحقق من صلاحية الـ Role (HR فقط)
-  // ============================================
-  if (user && user.role !== 'hr') {
+  if (user && user.role !== "hr") {
     // إذا كان المستخدم مسجل دخول لكن ليس HR
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b141a]">
@@ -42,9 +34,9 @@ const ProtectedRoute = ({ children }) => {
           </p>
           <button
             onClick={() => {
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-              window.location.href = '/login';
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              window.location.href = "/login";
             }}
             className="px-6 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
           >
@@ -56,9 +48,6 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // ============================================
-  // كل شيء على ما يرام - عرض المحتوى
-  // ============================================
   return children;
 };
 

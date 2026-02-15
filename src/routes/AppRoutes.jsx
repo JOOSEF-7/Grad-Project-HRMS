@@ -26,9 +26,7 @@ import Sett from "../pages/sett/Sett";
 
 export const router = createBrowserRouter(
   [
-    // ============================================
     // Public Routes (غير محمية)
-    // ============================================
     {
       path: "/",
       element: <Splash />,
@@ -61,19 +59,14 @@ export const router = createBrowserRouter(
       ),
     },
 
-    // ============================================
     // Protected Routes (محمية بـ Authentication)
-    // ============================================
     {
       element: <ProtectedLayout />,
       children: [
-        // ============================================
         // Dashboard Layout Routes (مع Sidebar و Navbar)
-        // ============================================
         {
           element: <MainLayout />,
           children: [
-            // Redirect من root المحمي للـ dashboard
             {
               path: "/",
               element: <Navigate to="/dashboard" replace />,
@@ -82,7 +75,6 @@ export const router = createBrowserRouter(
               path: "/dashboard",
               element: <Dashboard />,
             },
-            // ✅ تصحيح المسار من /employees إلى /employees
             {
               path: "/employees",
               element: <Employees />,
@@ -114,8 +106,7 @@ export const router = createBrowserRouter(
           ],
         },
 
-        // ============================================
-        // Full Screen Protected Pages (بدون Sidebar)
+        // Full Screen Protected Pages (without Sidebar)
         {
           path: "/employee/:id",
           element: <EmployeeDetail />,
@@ -130,10 +121,6 @@ export const router = createBrowserRouter(
         },
       ],
     },
-
-    // ============================================
-    // 404 Catch All (لازم يكون في الآخر)
-    // ============================================
     {
       path: "*",
       element: <Error />,

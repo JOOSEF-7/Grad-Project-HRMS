@@ -39,7 +39,6 @@ const Sidebar = () => {
         )}
       </NavLink>
 
-
       {/* Menu Items */}
       <div className="flex-1 px-3 space-y-2">
         {menuItems.map((item) => (

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedDate } from "../../store/slices/mainDashboard/dashboardSlice";
 
-// مكتبات  للتصدير
+// export liberaries
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 
@@ -26,7 +26,6 @@ const DashboardHeader = ({ printRef }) => {
     try {
       const element = printRef.current;
 
-      // 1. تحويل العنصر لـ PNG مع إعدادات "قوية" لتجنب الـ CORS
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
         useCORS: true,
@@ -34,13 +33,11 @@ const DashboardHeader = ({ printRef }) => {
         skipFonts: true,
         fontEmbedCSS: "",
 
-        // 💡 أهم جزء: فلتر ذكي بيمنع الـ Fetch العشوائي اللي بيبوظ الدنيا
         filter: (node) => {
           if (node.tagName === "LINK") return false;
           return true;
         },
 
-        // بكسل شفاف كبديل فوري لأي صورة تفشل (عشان السيستم ميهنجش)
         imagePlaceholder:
           "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
       });
@@ -64,8 +61,6 @@ const DashboardHeader = ({ printRef }) => {
       const timeStamp = new Date().getTime();
       pdf.save(`Staffly-Report-${appliedDate}-${timeStamp}.pdf`);
     } catch (error) {
-      // لو كل المحاولات فشلت بسبب الـ CORS، هنستخدم JPEG كـ Fallback سريع
-      console.warn("Retrying with fallback mode...");
       try {
         const dataUrlFallback = await htmlToImage.toJpeg(printRef.current, {
           quality: 0.9,

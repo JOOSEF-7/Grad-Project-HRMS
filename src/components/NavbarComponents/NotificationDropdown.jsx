@@ -2,15 +2,16 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
 import {
   markAsRead,
   handleNotificationAction,
   markAllAsRead,
   fetchNotifications,
 } from "../../store/slices/navbar/notificationSlice";
+
 import defaultAvatar from "../../assets/avatars/avatar-default-symbolic-svgrepo-com.svg";
 
-// 1. مكون الإشعار الواحد (يجب تعريفه أولاً)
 const NotificationItem = ({ n, onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const NotificationItem = ({ n, onClose }) => {
 
   const handleItemClick = () => {
     if (!n) return;
-    // التحويل لصفحة الأجازات أو المشاريع مع الوميض
+
     if (n.type === "leave" || n.type === "permission") {
       navigate(`/leave?highlightId=${n.targetId || n.id}`);
     } else if (n.type === "project_complete") {
@@ -39,7 +40,7 @@ const NotificationItem = ({ n, onClose }) => {
     >
       <div className="flex gap-4">
         <div className="w-11 h-11 rounded-full bg-gray-800 overflow-hidden shrink-0 border border-gray-700">
-          {/* // جوه NotificationItem: */}
+          {/*  NotificationItem: */}
           <img
             src={n.avatar && n.avatar.trim() !== "" ? n.avatar : defaultAvatar}
             alt=""
@@ -118,14 +119,13 @@ const NotificationItem = ({ n, onClose }) => {
   );
 };
 
-// 2. المكون الأساسي (Dropdown)
+// (Dropdown)
 const NotificationDropdown = ({ isOpen, setIsOpen, notifRef }) => {
   const dispatch = useDispatch();
   const { list: notifications, unreadCount } = useSelector(
     (state) => state.notifications,
   );
 
-  // جلب الإشعارات فوراً عند تحميل الموقع لضمان ظهور النقطة الحمراء
   useEffect(() => {
     dispatch(fetchNotifications());
   }, [dispatch]);
@@ -137,7 +137,6 @@ const NotificationDropdown = ({ isOpen, setIsOpen, notifRef }) => {
         className="w-10 h-10 bg-[#142129] rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all relative"
       >
         <i className="far fa-bell text-lg"></i>
-        {/* النقطة الحمراء تظهر الآن أوتوماتيكياً */}
         {unreadCount > 0 && (
           <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-pink-500 border-2 border-[#142129] rounded-full"></span>
         )}

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { logout } from "../../store/slices/loginAuth/loginAuthSlice";
+import { logout } from "../../store/slices/auth/loginSlice";
 import { fetchMyHRProfile } from "../../store/slices/navbar/hrProfileSlice";
 
 import defaultAvatar from "../../assets/avatars/avatar-default-symbolic-svgrepo-com.svg";
@@ -12,18 +12,15 @@ const ProfileDropdown = ({ isOpen, setIsOpen, profileRef }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // جلب بيانات المستخدم من Auth و HR Profile
   const { user: authUser } = useSelector((state) => state.auth);
   const { data: hrProfile, loading } = useSelector((state) => state.hrProfile);
 
-  // جلب بيانات الـ HR Profile عند التحميل
   useEffect(() => {
     if (authUser && !hrProfile) {
       dispatch(fetchMyHRProfile());
     }
   }, [dispatch, authUser, hrProfile]);
 
-  // استخدام بيانات الـ HR Profile إذا كانت متاحة، وإلا استخدم بيانات Auth
   const displayUser = hrProfile || authUser;
 
   const handleLogout = () => {

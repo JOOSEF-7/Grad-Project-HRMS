@@ -4,7 +4,6 @@ import { router } from "./routes/AppRoutes";
 export default function App() {
   return (
     <div className="relative min-h-screen text-[var(--text-main)] overflow-hidden">
-
       {/* Base black */}
       <div className="absolute inset-0 bg-[var(--bg-main)]" />
 
@@ -20,10 +19,6 @@ export default function App() {
       <div className="relative z-10">
         <RouterProvider router={router} />
       </div>
-
     </div>
   );
 }
-
-
-

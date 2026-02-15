@@ -19,12 +19,11 @@ const SearchModal = ({ isOpen, onClose, searchRef }) => {
 
   const { results, loading } = useSelector((state) => state.search);
 
-  // جلب النتائج عند تغيير Query أو Tab
   useEffect(() => {
     if (query.trim().length > 0) {
       const timeoutId = setTimeout(() => {
         dispatch(executeSearch({ query: query.trim(), type: activeTab }));
-      }, 300); // Debounce
+      }, 300);
 
       return () => clearTimeout(timeoutId);
     } else {
@@ -32,7 +31,6 @@ const SearchModal = ({ isOpen, onClose, searchRef }) => {
     }
   }, [query, activeTab, dispatch]);
 
-  // مسح البحث عند الإغلاق
   useEffect(() => {
     if (!isOpen) {
       setQuery("");
@@ -40,9 +38,7 @@ const SearchModal = ({ isOpen, onClose, searchRef }) => {
     }
   }, [isOpen, dispatch]);
 
-  // معالجة الضغط على نتيجة
   const handleResultClick = (result) => {
-    // التوجيه حسب النوع
     if (activeTab === "employees") {
       navigate(`/employee/${result.id}`);
     } else if (activeTab === "projects") {
@@ -56,7 +52,6 @@ const SearchModal = ({ isOpen, onClose, searchRef }) => {
     onClose();
   };
 
-  // التبويبات المتاحة
   const tabs = [
     { id: "employees", label: "Employees", icon: "fa-users" },
     { id: "projects", label: "Projects", icon: "fa-tasks" },
@@ -64,7 +59,6 @@ const SearchModal = ({ isOpen, onClose, searchRef }) => {
     { id: "leave", label: "Leaves", icon: "fa-calendar-times" },
   ];
 
-  // Render
   if (!isOpen) return null;
 
   return createPortal(
@@ -207,12 +201,6 @@ const SearchModal = ({ isOpen, onClose, searchRef }) => {
                   Tab
                 </kbd>{" "}
                 to switch
-              </span>
-              <span>
-                <kbd className="px-2 py-1 bg-gray-800 rounded text-[10px]">
-                  Esc
-                </kbd>{" "}
-                to close
               </span>
             </div>
             <span>{results?.length || 0} results</span>

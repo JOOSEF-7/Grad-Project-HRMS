@@ -34,7 +34,6 @@ const renderCustomizedLabel = ({
 const EmployeeStatus = ({ data }) => {
   const navigate = useNavigate();
 
-  // جلب إجمالي الموظفين من Redux
   const { analytics } = useSelector((state) => state.dashboard);
   const totalCount = analytics?.stats?.employees?.value || "0";
 

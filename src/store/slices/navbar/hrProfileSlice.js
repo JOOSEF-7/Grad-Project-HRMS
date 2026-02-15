@@ -1,43 +1,37 @@
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "../../../services/axios";
 
-
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../../services/axios';
-
-// ============================================
 // جلب بروفايل الـ HR الحالي
-// ============================================
 export const fetchMyHRProfile = createAsyncThunk(
-  'hrProfile/fetchMe',
+  "hrProfile/fetchMe",
   async (_, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/hr-profile/me
-      const response = await axios.get('/hr-profile/me');
+      const response = await axios.get("/hr-profile/me");
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to fetch HR profile");
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch HR profile",
+      );
     }
-  }
+  },
 );
 
-// ============================================
-// الـ Slice
-// ============================================
 const hrProfileSlice = createSlice({
-  name: 'hrProfile',
-  initialState: { 
-    data: null, 
-    loading: false, 
-    error: null 
+  name: "hrProfile",
+  initialState: {
+    data: null,
+    loading: false,
+    error: null,
   },
   reducers: {
-    clearHRProfile: (state) => { 
+    clearHRProfile: (state) => {
       state.data = null;
       state.error = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchMyHRProfile.pending, (state) => { 
+      .addCase(fetchMyHRProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -49,7 +43,7 @@ const hrProfileSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-  }
+  },
 });
 
 export const { clearHRProfile } = hrProfileSlice.actions;

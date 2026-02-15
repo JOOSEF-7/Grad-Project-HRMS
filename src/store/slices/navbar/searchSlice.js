@@ -1,33 +1,25 @@
-
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../../services/axios";
 
-// ============================================
 // تنفيذ البحث الموحد
-// ============================================
 export const executeSearch = createAsyncThunk(
   "search/execute",
   async ({ query, type }, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/search
       const response = await axios.get(`/search?query=${query}&type=${type}`);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Search failed");
     }
-  }
+  },
 );
 
-// ============================================
-// الـ Slice
-// ============================================
 const searchSlice = createSlice({
   name: "search",
-  initialState: { 
-    results: [], 
+  initialState: {
+    results: [],
     loading: false,
-    error: null
+    error: null,
   },
   reducers: {
     clearSearch: (state) => {

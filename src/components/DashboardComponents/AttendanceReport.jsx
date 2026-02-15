@@ -135,4 +135,3 @@ const StatItem = ({ label, value, color }) => (
 );
 
 export default AttendanceReport;
-

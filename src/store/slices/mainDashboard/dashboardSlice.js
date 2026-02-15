@@ -6,7 +6,6 @@ export const fetchDashboardAnalytics = createAsyncThunk(
   "dashboard/fetchAnalytics",
   async (date, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/dashboard/analytics
       const response = await axios.get(`/dashboard/analytics?date=${date}`);
       return response.data;
     } catch (err) {
