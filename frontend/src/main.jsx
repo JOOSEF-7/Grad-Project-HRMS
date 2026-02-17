@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
-import store from "./store/appStore"; // من غير { } هنا
+import store from "./store/appStore"; 
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes/AppRoutes";
-import "./styles/index.css"; // تأكدي إن المسار ده صح زي ما صلحناه
+import "./styles/index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
