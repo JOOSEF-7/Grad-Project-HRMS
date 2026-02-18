@@ -4,5 +4,5 @@ export default function Payroll() {
        <div className="min-h-screen  flex items-center justify-center p-4">
       <SuccessCard />
     </div>
-  )
+  );
 }

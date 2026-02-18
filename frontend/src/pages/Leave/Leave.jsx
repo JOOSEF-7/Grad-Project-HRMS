@@ -7,5 +7,5 @@ export default function Leave() {
      
       <DepartmentList/>
     </div>
-  )
+  );
 }
