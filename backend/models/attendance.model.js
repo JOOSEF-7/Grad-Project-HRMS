@@ -2,24 +2,24 @@ import mongoose from "mongoose";
 import { modelConfig } from "../utils/modelConfig.js";
 
 const attendanceSchema = new mongoose.Schema(
-  {
-    employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    date: { type: Date, default: Date.now },
-    checkIn: {
-      type: Date,
-      required: true,
+    {
+        employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        date: { type: Date, default: Date.now },
+        checkIn: {
+            type: Date,
+            required: true,
+        },
+        checkOut: Date,
+        status: {
+            type: String,
+            enum: ["Present", "Absent", "Late"],
+        },
+        totalHours: {
+            type: Number,
+            default: 0,
+        },
     },
-    checkOut: Date,
-    status: {
-      type: String,
-      enum: ["Present", "Absent", "Late"],
-    },
-    totalHours: {
-      type: Number,
-      default: 0,
-    },
-  },
-  modelConfig
+    modelConfig
 );
 
 const Attendance = mongoose.model("Attendance", attendanceSchema, "attendance");
