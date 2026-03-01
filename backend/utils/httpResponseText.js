@@ -1,3 +1,5 @@
-export const SUCCESS = "success";
-export const FAIL = "fail";
-export const ERROR = "error";
+export const httpResponseText = {
+  SUCCESS: "success",
+  FAIL: "fail",
+  ERROR: "error",
+};

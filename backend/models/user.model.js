@@ -1,34 +1,67 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
-const userRoles = require("../utils/userRole");
+import mongoose from "mongoose";
+import validator from "validator";
+import userRoles from "../utils/userRole.js";
+import { modelConfig } from "../utils/modelConfig.js";
 
 const userSchema = new mongoose.Schema(
-    {
-        name: { type: String, required: true },
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            validate: [validator.isEmail, "Invalid email"],
-        },
-        password: { type: String, required: true },
-        role: { type: String, enum: [userRoles.HR, userRoles.EMPLOYEE,userRoles.MANAGER], default: userRoles.EMPLOYEE },
-        rfidCard: { type: String, unique: true },
-        jobTitle: String,
-        department: String,
-        baseSalary: Number,
-        leaveBalance: {
-            annual: { type: Number, default: 21 },
-            sick: { type: Number, default: 7 },
-        },
-        status: {
-            type: String,
-            enum: ["Active", "Archived"],
-            default: "Active",
-        },
+  {
+    firstName: {
+      type: String,
+      required: true,
+      minLength: [3, "the minimum number of chracter is 3"],
     },
-    { timestamps: true },
+    lastName: {
+      type: String,
+      required: true,
+      minLength: [3, "the minimum number of chracter is 3"],
+    },
+    gender: { type: String, enum: ["Male", "Female"] },
+    phone: {
+      type: String,
+      required: true,
+      minLength: [6, "the phone number must be at least 6 numbes long"],
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: [validator.isEmail, "Invalid email"],
+    },
+    password: {
+      type: String,
+      required: true,
+      minLength: [8, "the password must be at least 8 characters long"],
+    },
+    role: {
+      type: String,
+      enum: [userRoles.HR, userRoles.EMPLOYEE, userRoles.MANAGER],
+      default: userRoles.EMPLOYEE,
+    },
+    rfidCard: { type: String, unique: true },
+    jobTitle: {
+      type: String,
+      required: true,
+    },
+    department: {
+      type: String,
+      required: true,
+    },
+    baseSalary: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["Active", "Archived"],
+      default: "Active",
+    },
+    avatar: {
+      type: String,
+      default: "/uploads/default-avatar.png",
+    },
+  },
+  modelConfig
 );
 
 const User = mongoose.model("User", userSchema);
-module.exports = User;
+export default User;

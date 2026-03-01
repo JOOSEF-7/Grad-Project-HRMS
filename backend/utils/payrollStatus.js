@@ -1,6 +1,5 @@
-const payroolStatus = {
-    PAID: "Paid",
-    UNPAID: "Unpaid",
-    PENDING: "Pending",
-}
-module.exports = payroolStatus;
+export const payrollStatus = {
+  PAID: "Paid",
+  UNPAID: "Unpaid",
+  PENDING: "Pending",
+};
