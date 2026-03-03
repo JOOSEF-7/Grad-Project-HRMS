@@ -29,10 +29,15 @@ const ProfileDropdown = ({ isOpen, setIsOpen, profileRef }) => {
     setIsOpen(false);
   };
 
+  // const goToProfile = () => {
+  //   navigate("/profile");
+  //   setIsOpen(false);
+  // };
   const goToProfile = () => {
-    navigate("/profile");
-    setIsOpen(false);
-  };
+  // بنقول له روح لصفحة السيتنج وخد معاك معلومة إننا عاوزين نفتح تاب الأكونت
+  navigate("/settings", { state: { activeTab: "account" } }); 
+  setIsOpen(false);
+};
 
   return (
     <div className="relative ml-2" ref={profileRef}>

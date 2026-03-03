@@ -22,7 +22,7 @@ import Attendance from "../pages/Attendance/Attendance";
 import Leave from "../pages/Leave/Leave";
 import Performance from "../pages/Performance/Performance";
 // import Settings from "../pages/sett/Settings";
-import Sett from "../pages/sett/Sett";
+import Settings from "../pages/sett/Settings";
 
 export const router = createBrowserRouter(
   [
@@ -116,8 +116,8 @@ export const router = createBrowserRouter(
           element: <EmployeeDetail />,
         },
         {
-          path: "/sett",
-          element: <Sett />,
+          path: "/settings",
+          element: <Settings />,
         },
       ],
     },
