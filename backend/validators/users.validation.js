@@ -109,12 +109,9 @@ export const updateValidateUserSchema = z.object({
         .object({
             general: validateUserSchema.shape.body.shape.general.partial(),
 
-            employee: validateUserSchema.shape.body.shape.employee
-                .partial()
-                .optional(),
+            employee: validateUserSchema.shape.body.shape.employee.partial(),
 
-            experience:
-                validateUserSchema.shape.body.shape.experience.optional(),
+            experience: validateUserSchema.shape.body.shape.experience,
         })
         .partial(),
 });

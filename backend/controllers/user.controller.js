@@ -24,7 +24,7 @@ export const getUserById = asyncWraper(async (req, res, next) => {
     if (req.currentUser.role !== "HR" && req.currentUser.userId !== userID) {
         const error = appErrors.create(
             403,
-            "Forbidden: You are not allowed to update other users' data",
+            "Forbidden You are not allowed to update other users' data",
             httpResponseText.FAIL
         );
         return next(error);
@@ -66,7 +66,15 @@ export const updateUser = asyncWraper(async (req, res, next) => {
         );
         return next(error);
     }
-    if (req.body?.general?.password) {
+    if (req.body.general?.email) {
+        const error = appErrors.create(
+            404,
+            "Email cannot be updated",
+            httpResponseText.FAIL
+        );
+        return next(error);
+    }
+    if (req.body.general?.password) {
         const hashedPassword = await bcrypt.hash(req.body.general.password, 10);
         req.body.general.password = hashedPassword;
     }

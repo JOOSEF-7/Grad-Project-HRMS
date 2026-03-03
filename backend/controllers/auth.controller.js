@@ -85,7 +85,7 @@ export const login = asyncWraper(async (req, res, next) => {
         const error = appErrors.create(
             400,
             "Invalid email or password",
-            "Fail"
+            httpResponseText.FAIL
         );
         return next(error);
     }
@@ -137,6 +137,7 @@ export const refreshUserToken = asyncWraper(async (req, res, next) => {
         const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
             expiresIn: "7d",
         });
+
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -209,7 +210,7 @@ export const forgetPassword = asyncWraper(async (req, res, next) => {
             appErrors.create(
                 500,
                 "Failed to send OTP email. Please try again later.",
-                FAIL
+                httpResponseText.FAIL
             )
         );
     }
@@ -218,7 +219,11 @@ export const forgetPassword = asyncWraper(async (req, res, next) => {
 export const verifyResetCode = asyncWraper(async (req, res, next) => {
     const { resetCode } = req.body;
     if (!resetCode) {
-        const error = appErrors.create(400, "resetCode is required", "Fail");
+        const error = appErrors.create(
+            400,
+            "resetCode is required",
+            httpResponseText.FAIL
+        );
         return next(error);
     }
     const hashedResetCode = crypto
@@ -257,17 +262,25 @@ export const resetPassword = asyncWraper(async (req, res, next) => {
         const error = appErrors.create(
             400,
             "email and newPassword are required",
-            FAIL
+            httpResponseText.FAIL
         );
         return next(error);
     }
     const user = await User.findOne({ "general.email": email });
     if (!user) {
-        const error = appErrors.create(404, "user not found", FAIL);
+        const error = appErrors.create(
+            404,
+            "user not found",
+            httpResponseText.FAIL
+        );
         return next(error);
     }
     if (!user.general.passwordResetVerified) {
-        const error = appErrors.create(400, "reset code not verified", FAIL);
+        const error = appErrors.create(
+            400,
+            "reset code not verified",
+            httpResponseText.FAIL
+        );
         return next(error);
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
