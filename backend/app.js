@@ -1,3 +1,6 @@
+import dns from "dns";
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -10,8 +13,7 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import usersRoutes from "./routes/users.routes.js";
-import { SUCCESS, FAIL, ERROR } from "./utils/httpResponseText.js";
-import appEorrrs from "./utils/errors.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,39 +1,66 @@
 import { Router } from "express";
-import multer from "multer";
-
+import { asyncWraper } from "../Middleware/asyncWraper.js";
 import { verifyToken } from "../guards/verifyToken.js";
+import { allowedTo } from "../guards/allowedTo.js";
 import { validate } from "../Middleware/validate.Middelware.js";
-import appErrors from "../utils/errors.js";
-
-import {
-  validateUserSchema,
-  validateLogInSchema,
-} from "../validators/users.validation.js";
-
-import {
-  getAllUsers,
-  login,
-  refreshUserToken,
-  register,
-} from "../controllers/users.controller.js";
-import { setAvatarToBody } from "../Middleware/setAvatarToBody.js";
-import { loginLimiter } from "../Middleware/rateLimiting.js";
+import { validateUserSchema, updateValidateUserSchema } from "../validators/users.validation.js";
 import upload from "../Middleware/multerConfig.js";
+import { setAvatarToBody } from "../Middleware/setAvatarToBody.js";
+import {
+    getAllUsers,
+    getUserById,
+    createUser,
+    updateUser,
+    deleteUser,
+} from "../controllers/user.controller.js";
 
 const router = Router();
 
-router.route("/").get(verifyToken, getAllUsers);
+// router
+//     .route("/")
+//     .get(
+//         verifyToken,
+//         allowedTo("HR", "EMPLOYEE", "MANAGER"),
+//         asyncWraper(getAllUsers)
+//     )
+//     .post(
+//         verifyToken,
+//         allowedTo("HR", "MANAGER"),
+//         upload.single("avatar"),
+//         setAvatarToBody,
+//         validate(validateUserSchema),
+//         asyncWraper(createUser)
+//     );
+
+// router
+//     .route("/:id")
+//     .get(
+//         verifyToken,
+//         allowedTo("HR", "EMPLOYEE", "MANAGER"),
+//         asyncWraper(getUserById)
+//     )
+//     .patch(
+//         verifyToken,
+//         allowedTo("HR", "EMPLOYEE", "MANAGER"),
+//         validate(validateUserSchema),
+//         asyncWraper(updateUser)
+//     )
+//     .delete(verifyToken, allowedTo("HR", "MANAGER"), asyncWraper(deleteUser));
 
 router
-  .route("/register")
-  .post(
-    upload.single("avatar"),
-    setAvatarToBody,
-    validate(validateUserSchema),
-    register,
-  );
+    .route("/")
+    .get(asyncWraper(getAllUsers))
+    .post(
+        upload.single("avatar"),
+        setAvatarToBody,
+        validate(validateUserSchema),
+        asyncWraper(createUser)
+    );
 
-router.route("/login").post(validate(validateLogInSchema), loginLimiter, login);
-router.route("/refresh").post(refreshUserToken);
+router
+    .route("/:id")
+    .get(asyncWraper(getUserById))
+    .patch(validate(updateValidateUserSchema), asyncWraper(updateUser))
+    .delete(asyncWraper(deleteUser));
 
 export default router;

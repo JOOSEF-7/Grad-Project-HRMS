@@ -9,15 +9,16 @@ const attendanceSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
-        checkOut: Date,
+        // checkOut: Date,
         status: {
             type: String,
             enum: ["Present", "Absent", "Late"],
+            default: "Absent",
         },
-        totalHours: {
-            type: Number,
-            default: 0,
-        },
+        // totalHours: {
+        //     type: Number,
+        //     default: 0,
+        // },
     },
     modelConfig
 );

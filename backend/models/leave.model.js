@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { modelConfig } from "../utils/modelConfig";
+import { _isoDuration } from "zod/v4/core";
 
 const leaveSchema = new mongoose.Schema(
   {
@@ -13,7 +14,8 @@ const leaveSchema = new mongoose.Schema(
       enum: ["Pending", "Approved", "Rejected"],
       default: "Pending",
     },
-  },
+    duration: { type: String, required: true },
+    hrId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },  },
   modelConfig
 );
 
