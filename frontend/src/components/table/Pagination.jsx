@@ -65,7 +65,7 @@ const Pagination = ({
                       onClick={() => handlePageChange(pageNum)}
                       className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
                         currentPage === pageNum
-                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
+                          ? 'bg-[#0095ff] text-white shadow-lg shadow-cyan-500/30'
                           : 'bg-slate-700/50 text-slate-400 hover:bg-slate-600/50'
                       }`}
                     >

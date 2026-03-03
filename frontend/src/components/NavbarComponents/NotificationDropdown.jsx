@@ -9,6 +9,8 @@ import {
   markAllAsRead,
   fetchNotifications,
 } from "../../store/slices/navbar/notificationSlice";
+import { updateLeaveStatus } from "../../store/slices/leaveSlice";
+
 
 import defaultAvatar from "../../assets/avatars/avatar-default-symbolic-svgrepo-com.svg";
 
@@ -29,10 +31,21 @@ const NotificationItem = ({ n, onClose }) => {
     onClose();
   };
 
+  // const onAction = (e, status) => {
+  //   e.stopPropagation();
+  //   dispatch(handleNotificationAction({ id: n.id, actionStatus: status }));
+  // };
   const onAction = (e, status) => {
-    e.stopPropagation();
-    dispatch(handleNotificationAction({ id: n.id, actionStatus: status }));
-  };
+  e.stopPropagation();
+
+  dispatch(
+    updateLeaveStatus({
+      id: n.targetId,
+      status: status === "accepted" ? "Approved" : "Rejected",
+    })
+  );
+};
+
 
   return (
     <div

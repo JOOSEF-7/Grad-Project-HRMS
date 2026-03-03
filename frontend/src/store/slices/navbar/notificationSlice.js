@@ -127,8 +127,13 @@ const notificationSlice = createSlice({
         );
 
         if (relatedNotif) {
-          relatedNotif.actionStatus =
-            status === "Approved" ? "accepted" : "rejected";
+          if (status === "Approved") {
+          relatedNotif.actionStatus = "accepted";
+         } else if (status === "Rejected") {
+          relatedNotif.actionStatus = "rejected";
+       } else {
+           relatedNotif.actionStatus = null; // 👈 ده المهم
+         }
           if (relatedNotif.status === "unread") {
             relatedNotif.status = "read";
             state.unreadCount = Math.max(0, state.unreadCount - 1);

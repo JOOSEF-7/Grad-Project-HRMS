@@ -26,7 +26,14 @@
     background-color: transparent;
   }
 }
-
+html, body, #root {
+  background-color: #0f172a; /* لون slate-900 */
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  /* بيمنع ظهور اللون الأبيض في السكرول الحاد */
+  overscroll-behavior-y: none; 
+}
 .flash-highlight {
   animation: flash-animation 1.5s ease-in-out infinite;
   z-index: 10;

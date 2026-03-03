@@ -8,13 +8,15 @@ import EmployeeStep from './steps/EmployeeStep';
 import PayrollStep from './steps/PayrollStep';
 import Button from '../../UI/Button';
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 const AddEmployeeModal = ({ open, onClose,onSuccess }) => {
-  const [step, setStep] = useState(1);
+  // const [step, setStep] = useState(1);
+  const [[step, direction], setStep] = useState([1, 0]);
   const [formData, setFormData] = useState({
     general: {
-    photo: '',
+    image: '',
     name: '',
     email: '',
     phone: '',
@@ -45,6 +47,20 @@ const AddEmployeeModal = ({ open, onClose,onSuccess }) => {
   }
 
   });
+   const variants = {
+  enter: (direction) => ({
+    x: direction > 0 ? 100 : -100,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction) => ({
+    x: direction > 0 ? -100 : 100,
+    opacity: 0,
+  }),
+};
   
 
 const updateGeneral = (field, value) => {
@@ -84,27 +100,37 @@ const updatePayroll = (field, value) => {
   }));
 };
 const handleSubmit = async () => {
-  try {
-    const employeeData = {
-      ...formData.general,
-      ...formData.experience,
-      ...formData.employee,
-      ...formData.payroll,
-    };
+  // try {
+  //   const employeeData = {
+  //     ...formData.general,
+  //     ...formData.experience,
+  //     ...formData.employee,
+  //     ...formData.payroll,
+  //   };
 
-    const response = await axios.post(
-      "http://localhost:5000/employees",
-      employeeData
-    );
-    onClose();        // يقفل المودال
-    onSuccess();      // 👈 نقول للـ parent إن العملية نجحت
+  //   const response = await axios.post(
+  //     "http://localhost:5000/employees",
+  //     employeeData
+  //   );
+  //   onClose();        // يقفل المودال
+  //   onSuccess();      // 👈 نقول للـ parent إن العملية نجحت
 
-    console.log(response.data);
+  //   console.log(response.data);
 
   
-  } catch (error) {
-    console.error(error);
-    alert("Something went wrong ❌");
+  // } catch (error) {
+  //   console.error(error);
+  //   alert("Something went wrong ❌");
+  // }
+   // ممكن تعملي console log مؤقتًا
+  console.log("Form Data:", formData);
+
+  // اقفل المودال
+  onClose();
+
+  // بلغ الـ parent إن العملية نجحت
+  if (onSuccess) {
+    onSuccess();
   }
 };
 
@@ -166,8 +192,50 @@ if (step === 2) {
   <div className="flex flex-col h-full">
 
   {/* Content */}
-  <div className="flex-1 px-4">
-    {step === 1 && (
+  {/* <div className="flex-1 px-4"> */}
+    <div className="flex-1 px-4 overflow-hidden">
+  <AnimatePresence mode="wait" custom={direction}>
+    <motion.div
+      key={step}
+      custom={direction}
+      variants={variants}
+      initial="enter"
+      animate="center"
+      exit="exit"
+      transition={{ duration: 0.3 }}
+      className=" w-full"
+    >
+      {step === 1 && (
+        <GeneralStep
+          data={formData.general}
+          onChange={updateGeneral}
+        />
+      )}
+
+      {step === 2 && (
+        <ExperianceStep
+          data={formData.experience}
+          onChange={updateExperience}
+        />
+      )}
+
+      {step === 3 && (
+        <EmployeeStep
+          data={formData.employee}
+          onChange={updateEmployee}
+        />
+      )}
+
+      {step === 4 && (
+        <PayrollStep
+          data={formData.payroll}
+          onChange={updatePayroll}
+        />
+      )}
+    </motion.div>
+  </AnimatePresence>
+</div>
+    {/* {step === 1 && (
       <GeneralStep
         data={formData.general}
         onChange={updateGeneral}
@@ -191,14 +259,16 @@ if (step === 2) {
     data={formData.payroll}
     onChange={updatePayroll}
   />
-)}
-  </div>
+)} */}
+ 
+  {/* </div> */}
   <div className="flex items-center gap-4 px-4 pb-4 pt-3">
 
   {step > 1 && (
     <button
       type="button"
-      onClick={() => setStep(step - 1)}
+      // onClick={() => setStep(step - 1)}
+      onClick={() => setStep(([prev]) => [prev - 1, -1])}
       className="w-14 h-14 shrink-0 rounded-full border border-gray-500 flex items-center justify-center text-white hover:bg-gray-700 transition"
     >
       ←
@@ -214,7 +284,8 @@ if (step === 2) {
       if (step === 4) {
         handleSubmit();
       } else {
-        setStep((s) => s + 1);
+        // setStep((s) => s + 1);
+        setStep(([prev]) => [prev + 1, 1]);
       }
     }}
     className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition

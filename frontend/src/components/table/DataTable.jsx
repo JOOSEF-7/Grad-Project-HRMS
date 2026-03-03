@@ -1,44 +1,7 @@
-// const DataTable = ({ columns, data }) => {
-//   return (
-    
-//     <div className="overflow-x-auto">
-//       <table className="min-w-full">
-//         <thead>
-//           <tr className="border-b border-slate-700/50">
-//             {columns.map((col) => (
-//               <th
-//                 key={col.accessor}
-//                 className="text-left px-6 py-4 text-sm font-medium text-slate-400"
-//               >
-//                 {col.header}
-//               </th>
-//             ))}
-//           </tr>
-//         </thead>
-
-//         <tbody>
-//           {data.map((row, index) => (
-//             <tr
-//               key={index}
-//               className="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors"
-//             >
-//               {columns.map((col) => (
-//                 <td key={col.accessor} className="px-6 py-4">
-//                   {col.render ? col.render(row) : row[col.accessor]}
-//                 </td>
-//               ))}
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     </div>
-   
-//   );
-// };
 const DataTable = ({ columns, data }) => {
   return (
-    <div className="w-full overflow-x-auto">
-      <table className="min-w-full">
+    <div className="overflow-x-auto scrollbar-hide">
+      <table className="w-full  text-slate-100">
         <thead>
           <tr className="border-b border-slate-700/50">
             {columns.map((col) => (
@@ -55,7 +18,7 @@ const DataTable = ({ columns, data }) => {
         <tbody>
           {data.map((row, index) => (
             <tr
-              key={index}
+              key={row.id}
               className="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors"
             >
               {columns.map((col) => (

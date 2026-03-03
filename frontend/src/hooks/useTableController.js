@@ -19,7 +19,7 @@ const useTableController = ({
     let result = [...data]
 
     // 🔍 Search
-    if (searchQuery) {
+    if (searchQuery&&searchKeys && searchKeys.length > 0 ) {
       result = result.filter(item =>
         searchKeys.some(key =>
           item[key]
