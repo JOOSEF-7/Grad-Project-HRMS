@@ -34,6 +34,7 @@ export const validateUserSchema = z.object({
                 }),
 
             role: z.enum(["HR", "EMPLOYEE", "MANAGER"]).default("EMPLOYEE"),
+
             rfidCard: z.string().optional(),
 
             phone: z
@@ -104,15 +105,59 @@ export const validateUserSchema = z.object({
 });
 
 export const updateValidateUserSchema = z.object({
-    body: z.object({
-        general: validateUserSchema.shape.body.shape.general
-            .partial(),
-        
-        employee: validateUserSchema.shape.body.shape.employee
-            .partial()
-            .optional(),
+    body: z
+        .object({
+            general: validateUserSchema.shape.body.shape.general.partial(),
 
-        experience: validateUserSchema.shape.body.shape.experience
-            .optional(),
-    }).partial(),
+            employee: validateUserSchema.shape.body.shape.employee
+                .partial()
+                .optional(),
+
+            experience:
+                validateUserSchema.shape.body.shape.experience.optional(),
+        })
+        .partial(),
+});
+
+export const validateLogInSchema = z.object({
+    body: z.object({
+        email: z
+            .string({ required_error: "email is required" })
+            .email({ message: "must be vaild email " }),
+        password: z
+            .string({ required_error: "password is required" })
+            .min(8, { message: "pssword must be at least 8 characters " }),
+    }),
+});
+export const forgetPasswordSchema = z.object({
+    body: z.object({
+        email: z
+            .string({ required_error: "email is required" })
+            .email({ message: "must be vaild email " }),
+    }),
+});
+
+export const verifyResetCodeSchema = z.object({
+    body: z.object({
+        resetCode: z
+            .string({
+                required_error: "reset code is required",
+                invalid_type_error: "reset code must be a string",
+            })
+            .length(6, { message: "reset code must be exactly 6 digits" })
+            .regex(/^\d+$/, {
+                message: "reset code must contain only numbers",
+            }),
+    }),
+});
+
+export const resetPasswordSchema = z.object({
+    body: z.object({
+        email: z
+            .string({ required_error: "email is required" })
+            .email({ message: "must be vaild email  from zod " }),
+        newPassword: z
+            .string({ required_error: "password is required" })
+            .min(8, { message: "pssword must be at least 6 characters " }),
+    }),
 });

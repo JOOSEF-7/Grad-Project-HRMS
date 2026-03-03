@@ -30,10 +30,13 @@ const userSchema = new mongoose.Schema(
                     "the password must be at least 8 characters long",
                 ],
             },
+            passwordResetCode: { type: String, default: null },
+            passwordResetExpires: { type: Date, default: null },
+            passwordResetVerified: { type: Boolean, default: false },
             role: {
                 type: String,
-                enum: [userRoles.HR, userRoles.EMPLOYEE, userRoles.MANAGER],
-                default: userRoles.EMPLOYEE,
+                enum: ["HR", "EMPLOYEE", "MANAGER"],
+                default: "EMPLOYEE",
             },
             rfidCard: { type: String, unique: true },
             phone: {
