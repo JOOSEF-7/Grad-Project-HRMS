@@ -1,11 +1,10 @@
 
-
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import StatCard from "../ProjectPageComponents/StatCard.jsx";
 import SearchBar from "../ProjectPageComponents/SearchInput.jsx";
 import AddProjectModal from "./AddProjectModel.jsx";
-import FilterDropdown from "./FilterDropdowm.jsx";
+
 
 const stats = [
   { title: "All Project", value: 12 },
@@ -14,7 +13,7 @@ const stats = [
   { title: "Completed", value: 4 },
 ];
 
-export default function ProjectHeader({ selectedFilter, setSelectedFilter }) {
+export default function ProjectHeader() {
   const [open, setOpen] = useState(false);
 
   return (
@@ -28,12 +27,6 @@ export default function ProjectHeader({ selectedFilter, setSelectedFilter }) {
           ))}
 
           <SearchBar />
-
-          {/* FilterDropdown مربوط بالـ state */}
-          <FilterDropdown
-            selectedFilter={selectedFilter}
-            setSelectedFilter={setSelectedFilter}
-          />
 
           <button
             onClick={() => setOpen(true)}

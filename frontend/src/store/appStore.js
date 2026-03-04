@@ -18,6 +18,8 @@ import employeeReducer from "./slices/employeeSlice";
 import projectReducer from "./slices/projectSlice";
 import hiringReducer from "./slices/hiringSlice";
 import leaveReducer from "./slices/leaveSlice";
+import attendanceReducer from "./slices/attendance/attendanceSlice";
+
 
 export const store = configureStore({
   reducer: {
@@ -40,6 +42,8 @@ export const store = configureStore({
     projects: projectReducer,
     leaves: leaveReducer,
     hiring: hiringReducer,
+    attendance: attendanceReducer,
+    
   },
 });
 

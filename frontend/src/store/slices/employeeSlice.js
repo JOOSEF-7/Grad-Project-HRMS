@@ -16,12 +16,12 @@ export const searchEmployees = createAsyncThunk(
 );
 
 // 2. جلب تفاصيل موظف معين
-export const fetchEmployeeById = createAsyncThunk(
-  "employees/fetchById",
+export const fetchEmployeeSummary = createAsyncThunk(
+  "employees/fetchSummary",
   async (id, { rejectWithValue }) => {
     try {
       // ✅ المسار الصحيح: /api/employees/:id
-      const response = await axios.get(`/employees/${id}`);
+      const response = await axios.get(`/employees/${id}/summary`);
       return response.data;
     } catch (err) {
       return rejectWithValue(
@@ -30,12 +30,31 @@ export const fetchEmployeeById = createAsyncThunk(
     }
   },
 );
+// 3. تعديل تفاصيل موظف معين
+export const updateEmployee = createAsyncThunk(
+  "employees/updateEmployee",
+  async ({ id, updatedData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `/employees/${id}`,
+        updatedData
+      );
+
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to update employee"
+      );
+    }
+  }
+);
 
 const employeeSlice = createSlice({
   name: "employees",
   initialState: {
     searchResults: [],
     employeeDetail: null,
+    selectedEmployee: null,
     loading: false,
     searchLoading: false,
     error: null,
@@ -68,18 +87,45 @@ const employeeSlice = createSlice({
         state.searchResults = [];
       })
       // جلب التفاصيل
-      .addCase(fetchEmployeeById.pending, (state) => {
+      .addCase(fetchEmployeeSummary.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchEmployeeById.fulfilled, (state, action) => {
+      .addCase(fetchEmployeeSummary.fulfilled, (state, action) => {
+        
         state.loading = false;
         state.employeeDetail = action.payload;
       })
-      .addCase(fetchEmployeeById.rejected, (state, action) => {
+      .addCase(fetchEmployeeSummary.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      // لما التحديث ينجح
+      .addCase(updateEmployee.fulfilled, (state, action) => {
+      state.loading = false;
+
+      if (state.employeeDetail?.id === action.payload.id) {
+      state.employeeDetail = action.payload; }
+
+      const index = state.searchResults.findIndex(
+       emp => emp.id === action.payload.id
+      );
+
+      if (index !== -1) {
+    state.searchResults[index] = action.payload;
+     }
+     })
+
+    // أثناء التحميل
+    .addCase(updateEmployee.pending, (state) => {
+      state.loading = true;
+    })
+
+    // لو فشل
+    .addCase(updateEmployee.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
   },
 });
 
