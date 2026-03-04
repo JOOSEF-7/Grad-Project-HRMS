@@ -69,8 +69,25 @@ const ReusableCalendar = ({
     const y = viewDate.getFullYear();
     const m = String(viewDate.getMonth() + 1).padStart(2, "0");
     const d = String(day).padStart(2, "0");
-    setTempDate(`${y}-${m}-${d}`);
-  };
+    const dateStr = `${y}-${m}-${d}`;
+      if (mode === "range") {
+    // لو لسه مفيش تاريخ بداية أو لو الموظف اختار فترة كاملة وعايز يغيرها
+    if (!tempDate?.start || (tempDate.start && tempDate.end)) {
+      setTempDate({ start: dateStr, end: null });
+    } else {
+      // لو اختار تاريخ قبل البداية، اعكسيهم عشان الـ Range يبقى صح
+      if (new Date(dateStr) < new Date(tempDate.start)) {
+        setTempDate({ start: dateStr, end: tempDate.start });
+      } else {
+        setTempDate({ ...tempDate, end: dateStr });
+      }
+    }
+  } else {
+    // الوضع القديم (Single)
+    setTempDate(dateStr);
+  }
+};
+  
 
   const getDisplayText = () => {
     if (!value) return "Select Date";

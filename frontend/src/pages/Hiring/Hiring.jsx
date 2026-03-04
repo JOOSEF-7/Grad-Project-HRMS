@@ -1,7 +1,9 @@
+import HiringTable from "../../components/HiringComponents/HiringTable/HiringTable";
+
 export default function Hiring() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-center py-10">Hiring Page</h1>
-    </div>
+     <div className="max-w-[1650px] mx-auto p-4 bg-transparent">
+      <HiringTable/>
+     </div>
   );
 }

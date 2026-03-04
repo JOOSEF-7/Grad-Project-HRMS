@@ -1,8 +1,8 @@
-import SuccessCard from "../../components/employees/AddEmployee/SuccessCard"
+import PayrollHeader from "../../components/PayrollComponents/PayrollHeader/PayrollHeader";
 export default function Payroll() {
   return (
-       <div className="min-h-screen  flex items-center justify-center p-4">
-      <SuccessCard />
-    </div>
+    <div className="max-w-[1650px] mx-auto p-4 bg-transparent">
+      <PayrollHeader/>
+     </div>
   );
 }
