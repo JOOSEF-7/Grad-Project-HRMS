@@ -11,6 +11,7 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import usersRoutes from "./routes/users.routes.js";
+import authRoutes from "./routes/users.routes.js";
 import appErrors from "./utils/errors.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -33,6 +34,7 @@ app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/users", usersRoutes);
+app.use("/api/auth", authRoutes);
 
 app.all(/(.*)/, (req, res, next) => {
     const error = appErrors.create(404, "the route is not handeld", "Fail");
