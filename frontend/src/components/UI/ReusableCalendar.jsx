@@ -9,13 +9,23 @@ const ReusableCalendar = ({
   const [isOpen, setIsOpen] = useState(false);
   
   // دالة لتحديد تاريخ العرض المبدئي
-  const getInitialViewDate = () => {
-    if (mode === "month" && typeof value === 'string' && value.includes('-')) {
-      const [y, m] = value.split("-");
-      return new Date(y, m - 1, 1);
-    }
-    return new Date(value || new Date());
-  };
+const getInitialViewDate = () => {
+  // 1. لو في وضع الـ Range والـ value عبارة عن Object
+  if (mode === "range" && value && typeof value === 'object' && value.start) {
+    const date = new Date(value.start);
+    return isNaN(date.getTime()) ? new Date() : date;
+  }
+
+  // 2. لو في وضع الـ Month
+  if (mode === "month" && typeof value === 'string' && value.includes('-')) {
+    const [y, m] = value.split("-");
+    return new Date(y, m - 1, 1);
+  }
+
+  // 3. الوضع العادي (Single) أو لو الـ value لسه مفيهاش داتا
+  const date = new Date(value && typeof value === 'string' ? value : new Date());
+  return isNaN(date.getTime()) ? new Date() : date;
+};
 
   const [viewDate, setViewDate] = useState(getInitialViewDate());
   const [tempDate, setTempDate] = useState(value);
@@ -92,6 +102,13 @@ const ReusableCalendar = ({
   const getDisplayText = () => {
     if (!value) return "Select Date";
     try {
+      if (mode === "range") {
+      if (!value.start) return "Select Period";
+      const start = new Date(value.start).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      if (!value.end) return `${start} - ...`;
+      const end = new Date(value.end).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      return `${start} - ${end}`;
+    }
       if (mode === "month") {
         const [y, m] = value.split("-");
         return new Date(y, m - 1).toLocaleString("en-US", { month: "short", year: "numeric" });
@@ -156,20 +173,32 @@ const ReusableCalendar = ({
                   <div key={index} className="text-[10px] text-gray-600 font-bold mb-2 uppercase">{d}</div>
                 ))}
                 {[...Array(firstDay(viewDate.getFullYear(), viewDate.getMonth()))].map((_, i) => <div key={`e-${i}`} />)}
-                {[...Array(daysInMonth(viewDate.getFullYear(), viewDate.getMonth()))].map((_, i) => {
-                  const day = i + 1;
-                  const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                  const isSelected = tempDate === dateStr;
-                  return (
-                    <button
-                      key={day}
-                      onClick={() => handleCellClick(day)}
-                      className={`h-9 w-9 text-xs rounded-xl flex items-center justify-center transition-all ${isSelected ? "bg-blue-600 text-white font-bold shadow-lg" : "text-gray-400 hover:bg-gray-800"}`}
-                    >
-                      {day}
-                    </button>
-                  );
-                })}
+               {[...Array(daysInMonth(viewDate.getFullYear(), viewDate.getMonth()))].map((_, i) => {
+              const day = i + 1;
+              const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  
+            // حسابات الحالات الجديدة
+            const isSelected = mode !== "range" && tempDate === dateStr;
+            const isStart = mode === "range" && tempDate?.start === dateStr;
+            const isEnd = mode === "range" && tempDate?.end === dateStr;
+            const inRange = mode === "range" && tempDate?.start && tempDate?.end && 
+            dateStr > tempDate.start && dateStr < tempDate.end;
+
+            return (
+           <button
+           key={day}
+           onClick={() => handleCellClick(day)}
+           className={`h-9 w-9 text-xs flex items-center justify-center transition-all relative
+        ${isSelected || isStart || isEnd ? "bg-blue-600 text-white font-bold rounded-xl z-10 shadow-lg" : "text-gray-400"}
+        ${inRange ? "bg-blue-600/20 text-blue-400 !rounded-none" : "hover:bg-gray-800 rounded-xl"}
+        ${isStart && tempDate.end ? "rounded-r-none" : ""} 
+        ${isEnd ? "rounded-l-none" : ""}
+      `}
+    >
+      {day}
+    </button>
+  );
+})}
               </div>
             )}
 
