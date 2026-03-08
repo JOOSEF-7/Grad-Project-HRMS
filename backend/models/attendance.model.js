@@ -1,27 +1,23 @@
 import mongoose from "mongoose";
 import { modelConfig } from "../utils/modelConfig.js";
+import { string } from "zod";
+import validator from "validator";
 
 const attendanceSchema = new mongoose.Schema(
     {
         employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        date: { type: Date, default: Date.now },
+        date: { type: String, required: true },
         checkIn: {
             type: Date,
-            required: true,
         },
-        // checkOut: Date,
         status: {
             type: String,
-            enum: ["Present", "Absent", "Late"],
+            enum: ["On Time", "Absent", "Late"],
             default: "Absent",
         },
-        // totalHours: {
-        //     type: Number,
-        //     default: 0,
-        // },
     },
     modelConfig
 );
-
+attendanceSchema.index({ employeeId: 1, date: 1 }, { unique: true });
 const Attendance = mongoose.model("Attendance", attendanceSchema, "attendance");
 export default Attendance;

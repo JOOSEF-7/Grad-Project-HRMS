@@ -4,7 +4,7 @@ import { verifyToken } from "../guards/verifyToken.js";
 import upload from "../Middleware/multerConfig.js";
 import { validate } from "../Middleware/validate.Middelware.js";
 import { loginLimiter } from "../Middleware/rateLimiting.js";
-import { setAvatarToBody } from "../Middleware/setAvatarToBody.js";
+import { setFilePathToBody } from "../Middleware/setAvatarToBody.js";
 import {
     forgetPassword,
     login,
@@ -28,7 +28,7 @@ router
     .route("/register")
     .post(
         upload.single("avatar"),
-        setAvatarToBody,
+        setFilePathToBody("general.avatar"),
         validate(validateUserSchema),
         register
     );

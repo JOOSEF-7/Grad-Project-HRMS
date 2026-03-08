@@ -11,8 +11,11 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import usersRoutes from "./routes/users.routes.js";
-import authRoutes from "./routes/users.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import attendanceRoutes from "./routes/attendence.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
 import appErrors from "./utils/errors.js";
+import scheduleAttendanceJob from "./jobs/attendanceJob.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +38,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/settings", settingsRoutes);
 
 app.all(/(.*)/, (req, res, next) => {
     const error = appErrors.create(404, "the route is not handeld", "Fail");
@@ -55,8 +60,10 @@ const port = process.env.PORT || 5000;
 
 mongoose
     .connect(url)
-    .then(() => {
+    .then(async () => {
         console.log("connected successfully to the database");
+        await scheduleAttendanceJob();
+
         app.listen(port, () => {
             console.log(`listening on the port ${port}`);
         });

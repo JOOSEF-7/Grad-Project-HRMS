@@ -35,8 +35,14 @@ export const validateUserSchema = z.object({
 
             role: z.enum(["HR", "EMPLOYEE", "MANAGER"]).default("EMPLOYEE"),
 
-            rfidCard: z.string().optional(),
-
+            rfidTag: z
+                .string({ required_error: "rfid tag is required" })
+                .length(8, {
+                    message: "rfid tag must be exactly 8 characters",
+                })
+                .regex(/^[0-9a-fA-F]+$/, {
+                    message: "Invalid RFID format (Hex only)",
+                }),
             phone: z
                 .string({
                     required_error: "phone number is required",
@@ -120,10 +126,10 @@ export const validateLogInSchema = z.object({
     body: z.object({
         email: z
             .string({ required_error: "email is required" })
-            .email({ message: "must be vaild email " }),
+            .email({ message: "must be valid email " }),
         password: z
             .string({ required_error: "password is required" })
-            .min(8, { message: "pssword must be at least 8 characters " }),
+            .min(8, { message: "password must be at least 8 characters " }),
     }),
 });
 export const forgetPasswordSchema = z.object({

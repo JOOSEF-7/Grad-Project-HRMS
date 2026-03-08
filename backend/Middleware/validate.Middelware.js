@@ -4,11 +4,18 @@ import appErrors from "../utils/errors.js";
 export const validate = (schema) => {
     return (req, res, next) => {
         try {
-            schema.parse({
+            const validatedData = schema.parse({
                 body: req.body || {},
                 query: req.query || {},
                 params: req.params || {},
             });
+
+            if (validatedData.body) Object.assign(req.body, validatedData.body);
+            if (validatedData.query)
+                Object.assign(req.query, validatedData.query);
+            if (validatedData.params)
+                Object.assign(req.params, validatedData.params);
+
             next();
         } catch (error) {
             if (error instanceof z.ZodError) {
