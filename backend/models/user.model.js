@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema(
             position: { type: String },
             jobType: {
                 type: String,
-                enum: ["Full-time", "Part-time", "Internship"],
+                enum: ["Full-time", "Part-time", "Internship", "Contract"],
             },
             baseSalary: { type: Number },
             startDate: { type: Date },

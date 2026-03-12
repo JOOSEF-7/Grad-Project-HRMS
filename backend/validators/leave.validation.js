@@ -8,7 +8,7 @@ export const validateLeaveSchema = z.object({
                 invalid_type_error: "employee id must be a string",
             })
             .regex(/^[0-9a-fA-F]{24}$/, { message: "Invalid Employee ID" }),
-        type: z.enum(["Sick", "Annual", "Unpaid"], {
+        type: z.enum(["Sick", "Annual", "Unpaid", "Other"], {
             required_error: "leave type is required",
         }),
         startDate: z.coerce.date({
@@ -33,7 +33,6 @@ export const validateLeaveSchema = z.object({
             required_error: "duration is required",
             invalid_type_error: "duration must be a string",
         }),
-
         hrId: z
             .string({
                 required_error: "HR id is required",

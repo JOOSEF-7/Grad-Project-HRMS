@@ -27,7 +27,7 @@ const router = Router();
 router
     .route("/register")
     .post(
-        upload.single("avatar"),
+        upload.single("general.avatar"),
         setFilePathToBody("general.avatar"),
         validate(validateUserSchema),
         register
