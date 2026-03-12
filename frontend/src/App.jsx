@@ -5,12 +5,11 @@ import { Toaster } from "react-hot-toast";
 
 export default function App() {
   return (
-  
-     
-      <div>
-       
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
+      <div style={{ overflow: 'visible' }}>
         <RouterProvider router={router} />
       </div>
-  
+    </>
   );
 }
