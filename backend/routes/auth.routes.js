@@ -4,7 +4,7 @@ import { verifyToken } from "../guards/verifyToken.js";
 import upload from "../Middleware/multerConfig.js";
 import { validate } from "../Middleware/validate.Middelware.js";
 import { loginLimiter } from "../Middleware/rateLimiting.js";
-import { setAvatarToBody } from "../Middleware/setAvatarToBody.js";
+import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 import {
     forgetPassword,
     login,
@@ -27,8 +27,8 @@ const router = Router();
 router
     .route("/register")
     .post(
-        upload.single("avatar"),
-        setAvatarToBody,
+        upload.fields([{ name: "general[avatar]", maxCount: 1 }]),
+        setFilesToBody({ "general[avatar]": "general.avatar" }),
         validate(validateUserSchema),
         register
     );

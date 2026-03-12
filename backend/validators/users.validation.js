@@ -66,7 +66,7 @@ export const validateUserSchema = z.object({
                     .enum(["Full-time", "Part-time", "Internship"])
                     .optional(),
 
-                baseSalary: z.number().optional(),
+                baseSalary: z.coerce.number().optional(),
 
                 startDate: z.coerce.date().optional(),
 
@@ -95,7 +95,7 @@ export const validateUserSchema = z.object({
                 required_error: "joining date is required",
             }),
 
-            baseSalary: z.number({
+            baseSalary: z.coerce.number({
                 required_error: "base salary is required",
             }),
 

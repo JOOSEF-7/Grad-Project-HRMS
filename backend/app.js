@@ -1,3 +1,6 @@
+import dns from "dns";
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -11,8 +14,10 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import usersRoutes from "./routes/users.routes.js";
-import authRoutes from "./routes/users.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 import appErrors from "./utils/errors.js";
+import projectRouter from "./routes/projects.routes.js";
+import taskRouter from "./routes/tasks.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +40,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/projects", projectRouter);
+app.use("/api/tasks", taskRouter);
+
 
 app.all(/(.*)/, (req, res, next) => {
     const error = appErrors.create(404, "the route is not handeld", "Fail");

@@ -8,20 +8,27 @@ const diskStorage = multer.diskStorage({
     cb(null, "uploads");
   },
   filename: function (req, file, cb) {
-    const ext = file.mimetype.split("/")[1];
-    const fileName = `user-image${Date.now()}.${ext}`;
-    cb(null, fileName);
-  },
+  const ext = file.mimetype.split("/")[1];
+  
+  const fileName = `${file.fieldname}-${Date.now()}.${ext}`;
+  
+  cb(null, fileName);
+},
 });
 
 const fileFilter = (req, file, cb) => {
-  const inputType = file.mimetype.split("/")[0];
-  if (inputType === "image") {
+  const mimeType = file.mimetype;
+
+  const isImage = mimeType.startsWith("image/");
+
+  const isPDF = mimeType === "application/pdf";
+
+  if (isImage || isPDF) {
     return cb(null, true);
   } else {
     return cb(
-      appErrors.create(400, "the file must be an image", httpResponseText.FAIL),
-      false,
+      appErrors.create(400, "Only images and PDF files are allowed!", httpResponseText.FAIL),
+      false
     );
   }
 };
