@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema(
                 enum: ["HR", "EMPLOYEE", "MANAGER"],
                 default: "EMPLOYEE",
             },
-            rfidCard: { type: String, unique: true },
+            rfidTag: { type: String, required: true, unique: true },
             phone: {
                 type: String,
                 required: true,

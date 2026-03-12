@@ -18,6 +18,9 @@ import authRoutes from "./routes/auth.routes.js";
 import appErrors from "./utils/errors.js";
 import projectRouter from "./routes/projects.routes.js";
 import taskRouter from "./routes/tasks.routes.js";
+import attendanceRoutes from "./routes/attendence.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
+import scheduleAttendanceJob from "./jobs/attendanceJob.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,6 +46,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRouter);
 app.use("/api/tasks", taskRouter);
 
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/settings", settingsRoutes);
 
 app.all(/(.*)/, (req, res, next) => {
     const error = appErrors.create(404, "the route is not handeld", "Fail");
@@ -63,8 +68,10 @@ const port = process.env.PORT || 5000;
 
 mongoose
     .connect(url)
-    .then(() => {
+    .then(async () => {
         console.log("connected successfully to the database");
+        await scheduleAttendanceJob();
+
         app.listen(port, () => {
             console.log(`listening on the port ${port}`);
         });
