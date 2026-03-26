@@ -21,19 +21,16 @@ import {
     verifyResetCodeSchema,
     resetPasswordSchema,
 } from "../validators/users.validation.js";
+import { processUploadedFile } from "../Middleware/processUploads.js";
 
 const router = Router();
 
 router
     .route("/register")
     .post(
-<<<<<<< HEAD
-        upload.single("general.avatar"),
-        setFilePathToBody("general.avatar"),
-=======
         upload.fields([{ name: "general[avatar]", maxCount: 1 }]),
+        processUploadedFile,
         setFilesToBody({ "general[avatar]": "general.avatar" }),
->>>>>>> Ammar
         validate(validateUserSchema),
         register
     );

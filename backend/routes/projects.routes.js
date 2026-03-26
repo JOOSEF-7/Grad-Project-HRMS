@@ -16,6 +16,7 @@ import {
 } from "../validators/project.validation.js";
 import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 import upload from "../Middleware/multerConfig.js";
+import { processUploadedFile } from "../Middleware/processUploads.js";
 
 router
     .route("/")
@@ -27,7 +28,11 @@ router
             { name: "general[avatar]", maxCount: 1 },
             { name: "documents", maxCount: 10 },
         ]),
-        setFilesToBody({ "general[avatar]": "general.avatar", documents: "documents" }),
+        processUploadedFile,
+        setFilesToBody({
+            "general[avatar]": "general.avatar",
+            documents: "documents",
+        }),
         validate(validateProjectSchema),
         createProject
     );
