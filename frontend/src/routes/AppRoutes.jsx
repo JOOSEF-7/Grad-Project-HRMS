@@ -11,6 +11,10 @@ import VerifyCode from "../pages/auth/VerifyCode/VerifyCode";
 import Splash from "../pages/Splash/Splash";
 import Error from "../pages/Error/Error";
 
+// Leave Pages
+import LeaveDetails from "../pages/Leave/LeaveDetails/LeaveDetails";
+import LeaveRequests from "../pages/Leave/LeaveRequests/LeaveRequests";
+
 // Dashboard Pages
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Employees from "../pages/Emlpoyees/Employees";
@@ -19,7 +23,6 @@ import Project from "../pages/Project/Project";
 import Payroll from "../pages/Payroll/Payroll";
 import Hiring from "../pages/Hiring/Hiring";
 import Attendance from "../pages/Attendance/Attendance";
-import Leave from "../pages/Leave/Leave";
 import Performance from "../pages/Performance/Performance";
 // import Settings from "../pages/sett/Settings";
 import Sett from "../pages/sett/Sett";
@@ -91,13 +94,18 @@ export const router = createBrowserRouter(
               path: "/hiring",
               element: <Hiring />,
             },
+          
             {
               path: "/attendance",
               element: <Attendance />,
             },
             {
-              path: "/leave",
-              element: <Leave />,
+              path: "/leave-requests",
+              element: <LeaveRequests />,
+            },
+            {
+              path: "/leave-details/:id",
+              element: <LeaveDetails />,
             },
             {
               path: "/performance",
