@@ -1,6 +1,3 @@
-import dns from "dns";
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
-
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -18,9 +15,12 @@ import authRoutes from "./routes/auth.routes.js";
 import appErrors from "./utils/errors.js";
 import projectRouter from "./routes/projects.routes.js";
 import taskRouter from "./routes/tasks.routes.js";
+import leaveRouter from "./routes/leaves.routes.js";
 import attendanceRoutes from "./routes/attendence.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
+import payrollRouter from "./routes/payroll.routes.js";
 import scheduleAttendanceJob from "./jobs/attendanceJob.js";
+import scheduleresetDefaultLeaves from "./jobs/resetDefaultLeaves.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +45,8 @@ app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRouter);
 app.use("/api/tasks", taskRouter);
+app.use("/api/leaves", leaveRouter);
+app.use("/api/payroll", payrollRouter);
 
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/settings", settingsRoutes);
@@ -71,6 +73,7 @@ mongoose
     .then(async () => {
         console.log("connected successfully to the database");
         await scheduleAttendanceJob();
+        await scheduleresetDefaultLeaves();
 
         app.listen(port, () => {
             console.log(`listening on the port ${port}`);
