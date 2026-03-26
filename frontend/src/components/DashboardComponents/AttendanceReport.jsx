@@ -8,22 +8,30 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const AttendanceReport = ({ title, desc, data }) => {
+const AttendanceReport = ({ title, desc, data,filter }) => {
   if (!data) return null;
 
   const { stats, chartData } = data;
 
   return (
-    <div className="bg-gradient-to-br from-transparent/20 to-45% to-[#182731] p-8 rounded-[2.5rem] border border-gray-800/50 shadow-xl w-full">
-      <div className="mb-10">
+    <div className="bg-gradient-to-br from-transparent/20 to-45% to-[#182731] p-[20px] rounded-[2.5rem] border border-gray-800/50 shadow-xl w-full mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3  mb-8">
+      <div >
         <h3 className="text-xl font-bold text-white mb-1">{title}</h3>
         <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">
           {desc}
         </p>
       </div>
+        <button className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 rounded-lg text-slate-300 text-sm hover:bg-slate-600/50 transition-colors">
+         
+          {filter}
+         
+        </button>
+      </div>
+  
 
-      <div className="flex flex-col lg:flex-row gap-10">
-        <div className="flex flex-col justify-center gap-8 min-w-[140px]">
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col justify-center gap-6 min-w-[105px]">
           <StatItem label="On-time" value={stats.onTime} color="bg-blue-500" />
           <StatItem
             label="Late attend"
@@ -33,7 +41,7 @@ const AttendanceReport = ({ title, desc, data }) => {
           <StatItem label="Absent" value={stats.absent} color="bg-gray-600" />
         </div>
 
-        <div className="flex-1 h-[320px] w-full min-w-0">
+        <div className="flex-1 h-[236px] w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart
               data={chartData}

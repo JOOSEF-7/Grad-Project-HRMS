@@ -1,10 +1,11 @@
 import { Router } from "express";
 import {
     checkIn,
-    getAllAttendence,
-    getMonthlyAttendenceStats,
-    getWeeklyAttendenceStats,
-} from "../controllers/attendence.controller.js";
+    getAllAttandence,
+    getAttendanceByEmployeeId,
+    getMonthlyAttendanceStats,
+    getWeeklyAttendanceStats,
+} from "../controllers/attendance.controller.js";
 import { validate } from "../Middleware/validate.Middelware.js";
 import {
     monthlyStatsSchema,
@@ -13,18 +14,22 @@ import {
 } from "../validators/attendance.valiation.js";
 import { verifyToken } from "../guards/verifyToken.js";
 import { allowedTo } from "../guards/allowedTo.js";
-import { get } from "mongoose";
 
 const router = Router();
-router.route("/").get(verifyToken, allowedTo("HR"), getAllAttendence);
+
+router.route("/").get(verifyToken, allowedTo("HR"), getAllAttandence);
+
+router.route("/employee/:id").get(verifyToken, getAttendanceByEmployeeId);
+
 router.route("/check-in").post(validate(validateCheckInSchema), checkIn);
+
 router
     .route("/stats/monthly")
     .get(
         verifyToken,
         allowedTo("HR"),
         validate(monthlyStatsSchema),
-        getMonthlyAttendenceStats
+        getMonthlyAttendanceStats
     );
 router
     .route("/stats/weekly")
@@ -32,7 +37,7 @@ router
         verifyToken,
         allowedTo("HR"),
         validate(weeklyStatsSchema),
-        getWeeklyAttendenceStats
+        getWeeklyAttendanceStats
     );
 
 export default router;

@@ -8,8 +8,8 @@ export const validateUserSchema = z.object({
                     required_error: "the first name is required",
                     invalid_type_error: "the first name must be a string",
                 })
-                .min(3, {
-                    message: "first name at least must be 3 characters",
+                .min(2, {
+                    message: "first name at least must be 2 characters",
                 }),
 
             lastName: z
@@ -17,7 +17,7 @@ export const validateUserSchema = z.object({
                     required_error: "the last name is required",
                     invalid_type_error: "the last name must be a string",
                 })
-                .min(3, { message: "last name at least must be 3 characters" }),
+                .min(2, { message: "last name at least must be 2 characters" }),
 
             email: z
                 .string({
@@ -69,7 +69,7 @@ export const validateUserSchema = z.object({
                 position: z.string().optional(),
 
                 jobType: z
-                    .enum(["Full-time", "Part-time", "Internship"])
+                    .enum(["Full-time", "Part-time", "Internship", "Contract"])
                     .optional(),
 
                 baseSalary: z.coerce.number().optional(),
@@ -106,6 +106,12 @@ export const validateUserSchema = z.object({
             }),
 
             status: z.enum(["Active", "Archived"]).default("Active"),
+
+            leaveBalance: z.object({
+                annual: z.coerce.number().default(21),
+                sick: z.coerce.number().default(30),
+                casual: z.coerce.number().default(6),
+            }),
         }),
     }),
 });

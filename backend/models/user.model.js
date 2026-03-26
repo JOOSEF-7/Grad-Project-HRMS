@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema(
             position: { type: String },
             jobType: {
                 type: String,
-                enum: ["Full-time", "Part-time", "Internship"],
+                enum: ["Full-time", "Part-time", "Internship", "Contract"],
             },
             baseSalary: { type: Number },
             startDate: { type: Date },
@@ -87,12 +87,24 @@ const userSchema = new mongoose.Schema(
                 type: String,
                 enum: ["Full-time", "Part-time", "Internship"],
             },
+            workingHours: {
+                type: Number,
+                required: true,
+                default: 8,
+                min: [4, "working hours must be at least 4 hours"],
+                max: [12, "working hours must be at most 12 hours"],
+            },
             joiningDate: { type: Date, required: true },
             baseSalary: { type: Number, required: true },
             status: {
                 type: String,
                 enum: ["Active", "Archived"],
                 default: "Active",
+            },
+            leaveBalance: {
+                annual: { type: Number, default: 21 },
+                sick: { type: Number, default: 30 },
+                casual: { type: Number, default: 6 },
             },
         },
     },

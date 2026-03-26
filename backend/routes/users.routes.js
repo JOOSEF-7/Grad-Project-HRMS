@@ -11,6 +11,9 @@ import {
 
 import { updateValidateUserSchema } from "../validators/users.validation.js";
 import { validateIdSchema } from "../validators/idSchema.validation.js";
+import upload from "../Middleware/multerConfig.js";
+import { processUploadedFile } from "../Middleware/processUploads.js";
+import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 
 const router = Router();
 
@@ -20,6 +23,9 @@ router
     .route("/:id")
     .get(validate(validateIdSchema), verifyToken, getUserById)
     .patch(
+        upload.fields([{ name: "general[avatar]", maxCount: 1 }]),
+        processUploadedFile,
+        setFilesToBody({ "general[avatar]": "general.avatar" }),
         validate(validateIdSchema),
         verifyToken,
         validate(updateValidateUserSchema),

@@ -37,12 +37,14 @@ export const updateLeaveStatus = createAsyncThunk(
     try {
       // /api/leaves/:id/status
       const response = await axios.patch(`/leaves/${id}/status`, { status });
-      return { id, status };
+      return response.data;;
     } catch (err) {
+      console.log(err.response);
       return rejectWithValue(err.response?.data?.message || "Update failed");
     }
   },
 );
+
 
 const leaveSlice = createSlice({
   name: "leaves",
@@ -86,20 +88,45 @@ const leaveSlice = createSlice({
         state.searchLoading = false;
         state.error = action.payload;
       })
-      // تحديث الحالة
-      .addCase(updateLeaveStatus.fulfilled, (state, action) => {
-        const { id, status } = action.payload;
-        // تحديث في القائمة الرئيسية
-        const leave = state.list.find((l) => l.id === id);
-        if (leave) {
-          leave.status = status;
-        }
-        // تحديث في نتائج البحث
-        const searchLeave = state.searchResults.find((l) => l.id === id);
-        if (searchLeave) {
-          searchLeave.status = status;
-        }
-      });
+      
+//       .addCase(updateLeaveStatus.fulfilled, (state, action) => {
+//        state.error = null; // مهم جدًا
+
+//       const { id, status } = action.payload;
+
+//   const leave = state.list.find((l) => l.id === id);
+//   if (leave) {
+//     leave.status = status;
+//   }
+
+//   const searchLeave = state.searchResults.find((l) => l.id === id);
+//   if (searchLeave) {
+//     searchLeave.status = status;
+//   }
+// })
+// .addCase(updateLeaveStatus.rejected, (state, action) => {
+//   state.error = action.payload;
+// });
+    .addCase(updateLeaveStatus.pending, (state) => {
+  state.error = null; // امسحي أي error قديم
+})
+.addCase(updateLeaveStatus.fulfilled, (state, action) => {
+  state.error = null; // تأكيد مسح الخطأ
+  const { id, status } = action.payload;
+
+  const leave = state.list.find((l) => l.id === id);
+  if (leave) {
+    leave.status = status;
+  }
+
+  const searchLeave = state.searchResults.find((l) => l.id === id);
+  if (searchLeave) {
+    searchLeave.status = status;
+  }
+})
+.addCase(updateLeaveStatus.rejected, (state, action) => {
+  state.error = action.payload;
+});
   },
 });
 

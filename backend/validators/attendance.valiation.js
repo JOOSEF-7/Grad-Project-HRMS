@@ -20,6 +20,10 @@ export const validateAttendenceSchema = z.object({
                 required_error: "status is required",
             })
             .default("Absent"),
+
+        delayMinutes: z.number().default(0),
+
+        isProcessed: z.boolean().default(false),
     }),
 });
 

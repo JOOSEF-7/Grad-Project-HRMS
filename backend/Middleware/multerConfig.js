@@ -2,36 +2,30 @@ import multer from "multer";
 import appErrors from "../utils/errors.js";
 import { httpResponseText } from "../utils/httpResponseText.js";
 
-const diskStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    console.log("file", file);
-    cb(null, "uploads");
-  },
-  filename: function (req, file, cb) {
-  const ext = file.mimetype.split("/")[1];
-  
-  const fileName = `${file.fieldname}-${Date.now()}.${ext}`;
-  
-  cb(null, fileName);
-},
-});
+const memoryStorage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  const mimeType = file.mimetype;
+    const mimeType = file.mimetype;
+    const isImage = mimeType.startsWith("image/");
+    const isPDF = mimeType === "application/pdf";
 
-  const isImage = mimeType.startsWith("image/");
-
-  const isPDF = mimeType === "application/pdf";
-
-  if (isImage || isPDF) {
-    return cb(null, true);
-  } else {
-    return cb(
-      appErrors.create(400, "Only images and PDF files are allowed!", httpResponseText.FAIL),
-      false
-    );
-  }
+    if (isImage || isPDF) {
+        return cb(null, true);
+    } else {
+        return cb(
+            appErrors.create(
+                400,
+                "Only images and PDF files are allowed!",
+                httpResponseText.FAIL
+            ),
+            false
+        );
+    }
 };
 
-const upload = multer({ storage: diskStorage, fileFilter });
+const upload = multer({
+    storage: memoryStorage,
+    fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 },
+});
 export default upload;

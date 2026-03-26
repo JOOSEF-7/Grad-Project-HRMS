@@ -22,6 +22,7 @@ import {
     verifyResetCodeSchema,
     resetPasswordSchema,
 } from "../validators/users.validation.js";
+import { processUploadedFile } from "../Middleware/processUploads.js";
 
 const router = Router();
 
@@ -29,6 +30,7 @@ router
     .route("/register")
     .post(verifyToken,allowedTo("HR","MANAGER"),
         upload.fields([{ name: "general[avatar]", maxCount: 1 }]),
+        processUploadedFile,
         setFilesToBody({ "general[avatar]": "general.avatar" }),
         validate(validateUserSchema),
         register
