@@ -1,3 +1,6 @@
+import dns from "dns";
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -12,9 +15,11 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import usersRoutes from "./routes/users.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import appErrors from "./utils/errors.js";
+import projectRouter from "./routes/projects.routes.js";
+import taskRouter from "./routes/tasks.routes.js";
 import attendanceRoutes from "./routes/attendence.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
-import appErrors from "./utils/errors.js";
 import scheduleAttendanceJob from "./jobs/attendanceJob.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -38,6 +43,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/projects", projectRouter);
+app.use("/api/tasks", taskRouter);
+
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/settings", settingsRoutes);
 

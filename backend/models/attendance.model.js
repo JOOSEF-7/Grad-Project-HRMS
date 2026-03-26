@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 import { modelConfig } from "../utils/modelConfig.js";
-import { string } from "zod";
-import validator from "validator";
 
 const attendanceSchema = new mongoose.Schema(
     {
