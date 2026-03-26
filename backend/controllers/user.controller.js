@@ -24,7 +24,7 @@ export const getUserById = asyncWraper(async (req, res, next) => {
     if (req.currentUser.role !== "HR" && req.currentUser.userId !== userID) {
         const error = appErrors.create(
             403,
-            "Forbidden You are not allowed to update other users' data",
+            "Forbidden You are not allowed to show other users' data",
             httpResponseText.FAIL
         );
         return next(error);
