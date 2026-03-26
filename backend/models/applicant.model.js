@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import validator from "validator";
-import { modelConfig } from "../utils/modelConfig";
+import { modelConfig } from "../utils/modelConfig.js";
 
 const applicantSchema = new mongoose.Schema(
     {
@@ -25,11 +25,9 @@ const applicantSchema = new mongoose.Schema(
         email: {
             type: String,
             required: true,
-            unique: true,
             validate: [validator.isEmail, "Invalid email"],
         },
         resumeLink: String,
-        experience: { type: Number, required: true },
         status: {
             type: String,
             enum: ["Applied", "Interviewing", "Hired", "Rejected"],
@@ -38,6 +36,17 @@ const applicantSchema = new mongoose.Schema(
         avatar: {
             type: String,
             default: "/uploads/default-avatar.png",
+        },
+        experience: {
+            company: { type: String },
+            position: { type: String },
+            jobType: {
+                type: String,
+                enum: ["Full-time", "Part-time", "Internship"],
+            },
+            baseSalary: { type: Number },
+            startDate: { type: Date },
+            endDate: { type: Date },
         },
     },
     modelConfig

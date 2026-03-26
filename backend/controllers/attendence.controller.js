@@ -164,7 +164,7 @@ export const getMonthlyAttendenceStats = asyncWraper(async (req, res, next) => {
         },
         {
             $group: {
-                // _id: { $substr: ["$date", 0, 7] },
+                // _id: { $substr: ["$date", 0, 7] }, 2025-06-07  2025-06
                 _id: {
                     year: {
                         $year: { $dateFromString: { dateString: "$date" } },

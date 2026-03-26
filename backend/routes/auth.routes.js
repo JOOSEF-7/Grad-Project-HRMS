@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { verifyToken } from "../guards/verifyToken.js";
+import { allowedTo } from "../guards/allowedTo.js";
 import upload from "../Middleware/multerConfig.js";
 import { validate } from "../Middleware/validate.Middelware.js";
 import { loginLimiter } from "../Middleware/rateLimiting.js";
@@ -26,7 +27,7 @@ const router = Router();
 
 router
     .route("/register")
-    .post(
+    .post(verifyToken,allowedTo("HR","MANAGER"),
         upload.fields([{ name: "general[avatar]", maxCount: 1 }]),
         setFilesToBody({ "general[avatar]": "general.avatar" }),
         validate(validateUserSchema),

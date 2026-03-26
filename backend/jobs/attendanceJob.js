@@ -20,7 +20,7 @@ const attendanceJob = async () => {
                 "No setting found. please create a setting in the database."
             );
             return;
-        }
+        }  
         if (setting.weekEnds?.includes(dayOf)) {
             console.log(
                 "Today is a weekend. No attendance records will be created."

@@ -26,24 +26,6 @@ export const register = asyncWraper(async (req, res, next) => {
 
     const newUser = new User({ general, experience, employee });
 
-    const { accessToken, refreshToken } = generateToken({
-        email: newUser.general.email,
-        userId: newUser._id,
-        role: newUser.general.role,
-    });
-    res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 60 * 60 * 1000,
-    });
-    res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
     await newUser.save();
 
     newUser.general.password = undefined;

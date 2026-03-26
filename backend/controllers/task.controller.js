@@ -16,7 +16,16 @@ export const getTasksByProjectId = asyncWraper(async (req, res, next) => {
 });
 
 export const createTask = asyncWraper(async (req, res, next) => {
-    const { projectId } = req.params; 
+    const { projectId } = req.params;
+    const project = await Project.findById(projectId);
+    if (!project) {
+        const error = appErrors.create(
+            404,
+            "Project Not Found",
+            httpResponseText.FAIL
+        );
+        return next(error);
+    }
     const { title, done } = req.body;
 
     const newTask = new Task({
