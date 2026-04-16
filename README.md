@@ -19,7 +19,7 @@ Since this is a collaborative graduation project, the codebase is divided into s
 * **AI/ML:** Python, ONNX.
 * **IoT:** ESP32, RFID modules, C++.
 
-## 👨 Team & Contributions
+##  Team & Contributions
 
 **Note for Reviewers and Recruiters:**
 As the **Team Leader and Lead Backend/AI Engineer**, my primary contributions including the System Architecture, Backend Logic, AI Integration, and IoT bridging are located exclusively in the `/backend` and `/ai_service` directories on the `Youssef` branch. 
