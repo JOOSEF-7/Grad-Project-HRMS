@@ -8,55 +8,91 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import mongoose from "mongoose";
+import { buildNameSearchQuery } from "../utils/searchHelper.js";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export const getAllAttandence = asyncWraper(async (req, res, next) => {
-    const { date, limit, page } = req.query;
+    const { date, limit, page, status } = req.query;
+
     const pipeline = [];
+
+    const matchStage = {};
+    let finalDate = date;
+
     if (date) {
-        pipeline.push({
-            $match: { date: date },
-        });
+        finalDate = dayjs(date).format("YYYY-MM-DD");
+    }
+
+    if (finalDate) matchStage.date = finalDate;
+    if (status) matchStage.status = status;
+
+    if (Object.keys(matchStage).length > 0) {
+        pipeline.push({ $match: matchStage });
     }
     const limitNumber = parseInt(limit) || 10;
     const pageNumber = parseInt(page) || 1;
     const skip = (pageNumber - 1) * limitNumber;
 
-    pipeline.push(
-        { $sort: { date: -1, _id: -1 } },
-        { $skip: skip },
-        { $limit: limitNumber },
-        {
-            $lookup: {
-                from: "users",
-                localField: "employeeId",
-                foreignField: "_id",
-                as: "employeeDetails",
-            },
+    pipeline.push({
+        $facet: {
+            metadata: [{ $count: "totalRecords" }],
+            data: [
+                { $sort: { date: -1, _id: -1 } },
+                { $skip: skip },
+                { $limit: limitNumber },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "employeeId",
+                        foreignField: "_id",
+                        as: "employeeDetails",
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$employeeDetails",
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        employeeId: 1,
+                        date: 1,
+                        checkIn: 1,
+                        status: 1,
+                        employee: {
+                            firstName: "$employeeDetails.general.firstName",
+                            lastName: "$employeeDetails.general.lastName",
+                            email: "$employeeDetails.general.email",
+                            department: "$employeeDetails.employee.department",
+                            jobType: "$employeeDetails.employee.jobType",
+                            avatar: "$employeeDetails.general.avatar",
+                        },
+                    },
+                },
+            ],
         },
-        {
-            $unwind: "$employeeDetails",
-        },
-        {
-            $project: {
-                _id: 1,
-                employeeId: 1,
-                date: 1,
-                checkIn: 1,
-                status: 1,
-                firstName: "$employeeDetails.general.firstName",
-                lastName: "$employeeDetails.general.lastName",
-                email: "$employeeDetails.general.email",
-                department: "$employeeDetails.employee.department",
-                jobType: "$employeeDetails.employee.jobType",
-            },
-        }
-    );
-    const attendance = await Attendance.aggregate(pipeline);
+    });
+
+    const result = await Attendance.aggregate(pipeline);
+
+    const attendanceData = result[0].data;
+    const totalRecords = result[0].metadata[0]?.totalRecords || 0;
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { attendance },
+        data: {
+            attendance: attendanceData,
+            pagination: {
+                totalRecords,
+                totalPages,
+                currentPage: pageNumber,
+                limit: limitNumber,
+            },
+        },
     });
 });
 
@@ -71,7 +107,6 @@ export const getAttendanceByEmployeeId = asyncWraper(async (req, res, next) => {
         return next(error);
     }
     const limitNumber = parseInt(limit) || 10;
-    console.log(limitNumber);
     const pageNumber = parseInt(page) || 1;
     const skip = (pageNumber - 1) * limitNumber;
 
@@ -451,5 +486,94 @@ export const getWeeklyAttendanceStats = asyncWraper(async (req, res, next) => {
     res.status(200).json({
         status: httpResponseText.SUCCESS,
         data: { weeklyAttendenceStats: attendence },
+    });
+});
+
+export const searchAttendance = asyncWraper(async (req, res, next) => {
+    const { page, limit, date, employeeName } = req.query;
+
+    const limitNumber = parseInt(limit) || 10;
+    const pageNumber = parseInt(page) || 1;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const pipeline = [];
+
+    if (date) {
+        const finalDate = dayjs(date).format("YYYY-MM-DD");
+        pipeline.push({
+            $match: { date: finalDate },
+        });
+    }
+
+    const nameMatchStage = buildNameSearchQuery(
+        employeeName,
+        "employeeDetails.general.firstName",
+        "employeeDetails.general.lastName"
+    );
+
+    pipeline.push(
+        {
+            $lookup: {
+                from: "users",
+                localField: "employeeId",
+                foreignField: "_id",
+                as: "employeeDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$employeeDetails",
+                preserveNullAndEmptyArrays: false,
+            },
+        },
+        {
+            $match: nameMatchStage,
+        }
+    );
+
+    pipeline.push({
+        $facet: {
+            metadata: [{ $count: "totalRecords" }],
+            data: [
+                { $sort: { date: -1, _id: -1 } },
+                { $skip: skip },
+                { $limit: limitNumber },
+                {
+                    $project: {
+                        _id: 1,
+                        employeeId: 1,
+                        date: 1,
+                        checkIn: 1,
+                        status: 1,
+                        employee: {
+                            firstName: "$employeeDetails.general.firstName",
+                            lastName: "$employeeDetails.general.lastName",
+                            email: "$employeeDetails.general.email",
+                            department: "$employeeDetails.employee.department",
+                            jobType: "$employeeDetails.employee.jobType",
+                            avatar: "$employeeDetails.general.avatar",
+                        },
+                    },
+                },
+            ],
+        },
+    });
+
+    const result = await Attendance.aggregate(pipeline);
+    const attendanceData = result[0].data;
+    const totalRecords = result[0].metadata[0]?.totalRecords || 0;
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: {
+            attendance: attendanceData,
+            pagination: {
+                totalRecords,
+                totalPages,
+                currentPage: pageNumber,
+                limit: limitNumber,
+            },
+        },
     });
 });

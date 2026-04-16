@@ -18,6 +18,7 @@
             },
         },
         modelConfig
+        
     );
 
     const Task = mongoose.model("Task", taskSchema);

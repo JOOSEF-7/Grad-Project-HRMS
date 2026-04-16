@@ -8,6 +8,7 @@ import {
     getAllLeaves,
     getLeaveById,
     getUserLeavesById,
+    searchLeave,
     updateLeave,
     updateLeaveStatus,
 } from "../controllers/leave.controller.js";
@@ -18,17 +19,29 @@ import {
 } from "../validators/leave.validation.js";
 import upload from "../Middleware/multerConfig.js";
 import { setFilesToBody } from "../Middleware/setFilesToBody.js";
-import { validateIdSchema } from "../validators/idSchema.validation.js";
+import {
+    searchQuerySchema,
+    validateIdParams,
+} from "../validators/common.validation.js";
+import { getAllLeavesQuerySchema } from "../validators/leave.validation.js";
 
 const router = Router();
 
-router.route("/").get(verifyToken, allowedTo("HR"), getAllLeaves);
+router
+    .route("/")
+    .get(
+        verifyToken,
+        allowedTo("HR"),
+        validate(getAllLeavesQuerySchema),
+        getAllLeaves
+    );
+router.get("/search", validate(searchQuerySchema), searchLeave);
 
 router
     .route("/employee/:id")
-    .get(verifyToken, validate(validateIdSchema), getUserLeavesById);
+    .get(verifyToken, validate(validateIdParams), getUserLeavesById);
 
-router.route("/:id").get(verifyToken, validate(validateIdSchema), getLeaveById);
+router.route("/:id").get(verifyToken, validate(validateIdParams), getLeaveById);
 
 router
     .route("/create")
@@ -48,7 +61,7 @@ router
         allowedTo("EMPLOYEE"),
         upload.fields([{ name: "attachment", maxCount: 1 }]),
         setFilesToBody({ attachment: "attachment" }),
-        validate(validateIdSchema),
+        validate(validateIdParams),
         validate(validateUpdateLeaveSchema),
         updateLeave
     );
@@ -58,7 +71,7 @@ router
     .patch(
         verifyToken,
         allowedTo("HR"),
-        validate(validateIdSchema),
+        validate(validateIdParams),
         validate(validateLeaveStatusSchema),
         updateLeaveStatus
     );
@@ -68,7 +81,7 @@ router
     .delete(
         verifyToken,
         allowedTo("EMPLOYEE"),
-        validate(validateIdSchema),
+        validate(validateIdParams),
         deleteLeave
     );
 

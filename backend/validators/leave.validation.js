@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+    dateValidation,
+    limitValidation,
+    pageValidation,
+    statusValidation,
+} from "./common.validation.js";
 
 const leavePayloadSchema = z.object({
     type: z.enum(["Sick", "Annual", "Casual", "Unpaid", "Other"], {
@@ -44,8 +50,17 @@ export const validateUpdateLeaveSchema = z.object({
 export const validateLeaveStatusSchema = z.object({
     body: z
         .object({
-            status: z.enum(["Approved", "Rejected"]),
+            status: statusValidation("Approved", "Rejected"),
             rejectReason: z.string().nullable().default(null),
         })
         .strict(),
+});
+
+export const getAllLeavesQuerySchema = z.object({
+    query: z.object({
+        page: pageValidation,
+        limit: limitValidation,
+        date: dateValidation,
+        status: statusValidation("Pending", "Approved", "Rejected").optional(),
+    }),
 });

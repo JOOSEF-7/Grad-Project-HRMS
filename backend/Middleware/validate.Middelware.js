@@ -15,7 +15,6 @@ export const validate = (schema) => {
                 Object.assign(req.query, validatedData.query);
             if (validatedData.params)
                 Object.assign(req.params, validatedData.params);
-
             next();
         } catch (error) {
             if (error instanceof z.ZodError) {

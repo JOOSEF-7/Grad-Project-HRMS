@@ -5,10 +5,112 @@ import { asyncWraper } from "../Middleware/asyncWraper.js";
 import dayjs from "dayjs";
 import { httpResponseText } from "../utils/httpResponseText.js";
 import mongoose from "mongoose";
+import { buildNameSearchQuery } from "../utils/searchHelper.js";
 
 export const getAllLeaves = asyncWraper(async (req, res, next) => {
-    const leaves = await Leave.find();
-    res.status(200).json({ status: httpResponseText.SUCCESS, data: leaves });
+    const { date, status, page, limit } = req.query;
+    const pipeline = [];
+    const matchStage = {};
+    if (date) {
+        let finalDate = dayjs(date).format("YYYY-MM-DD");
+        matchStage.startDate = { $lte: finalDate };
+        matchStage.endDate = { $gte: finalDate };
+    }
+    if (status) matchStage.status = status;
+    if (Object.keys(matchStage).length > 0) {
+        pipeline.push({ $match: matchStage });
+    }
+    const limitNumber = parseInt(limit) || 10;
+    const pageNumber = parseInt(page) || 1;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    pipeline.push({
+        $facet: {
+            metadata: [{ $count: "totalRecords" }],
+            leavesData: [
+                { $sort: { createdAt: -1, _id: -1 } },
+                { $skip: skip },
+                { $limit: limitNumber },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "employeeId",
+                        foreignField: "_id",
+                        as: "employeeDetails",
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$employeeDetails",
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "hrId",
+                        foreignField: "_id",
+                        as: "hrDetails",
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$hrDetails",
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        employeeId: 1,
+                        type: 1,
+                        startDate: 1,
+                        endDate: 1,
+                        status: 1,
+                        reason: 1,
+                        rejectReason: 1,
+                        attachment: 1,
+                        duration: 1,
+                        hrId: 1,
+                        employee: {
+                            firstName: "$employeeDetails.general.firstName",
+                            lastName: "$employeeDetails.general.lastName",
+                            email: "$employeeDetails.general.email",
+                            phone: "$employeeDetails.general.phone",
+                            avatar: "$employeeDetails.general.avatar",
+                            department: "$employeeDetails.employee.department",
+                            jobTitle: "$employeeDetails.employee.jobTitle",
+                            annualLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.annual",
+                            sickLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.sick",
+                            casualLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.casual",
+                        },
+                        hrApprovedBy: {
+                            _id: "$hrDetails._id",
+                            firstName: "$hrDetails.general.firstName",
+                            lastName: "$hrDetails.general.lastName",
+                        },
+                    },
+                },
+            ],
+        },
+    });
+
+    const leaves = await Leave.aggregate(pipeline);
+    const totalRcords = leaves[0].metadata[0]?.totalRecords || 0;
+    const totalPages = Math.ceil(totalRcords / limitNumber);
+    const data = leaves[0].leavesData;
+    res.status(200).json({
+        data,
+        pagination: {
+            totalRcords,
+            totalPages,
+            currentPage: pageNumber,
+            limit: limitNumber,
+        },
+    });
 });
 
 export const createLeave = asyncWraper(async (req, res, next) => {
@@ -157,7 +259,77 @@ export const getUserLeavesById = asyncWraper(async (req, res, next) => {
 
 export const getLeaveById = asyncWraper(async (req, res, next) => {
     const { id } = req.params;
-    const leave = await Leave.findById(id, { __v: 0 });
+    const pipeline = [
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(id),
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "employeeId",
+                foreignField: "_id",
+                as: "employeeDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$employeeDetails",
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "hrId",
+                foreignField: "_id",
+                as: "hrDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$hrDetails",
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        {
+            $project: {
+                _id: 1,
+                type: 1,
+                startDate: 1,
+                endDate: 1,
+                status: 1,
+                reason: 1,
+                rejectReason: 1,
+                attachment: 1,
+                duration: 1,
+                employee: {
+                    firstName: "$employeeDetails.general.firstName",
+                    lastName: "$employeeDetails.general.lastName",
+                    email: "$employeeDetails.general.email",
+                    phone: "$employeeDetails.general.phone",
+                    avatar: "$employeeDetails.general.avatar",
+                    department: "$employeeDetails.employee.department",
+                    jobTitle: "$employeeDetails.employee.jobTitle",
+                    annualLeaveBalance:
+                        "$employeeDetails.employee.leaveBalance.annual",
+                    sickLeaveBalance:
+                        "$employeeDetails.employee.leaveBalance.sick",
+                    casualLeaveBalance:
+                        "$employeeDetails.employee.leaveBalance.casual",
+                },
+                hrApprovedBy: {
+                    _id: "$hrDetails._id",
+                    firstName: "$hrDetails.general.firstName",
+                    lastName: "$hrDetails.general.lastName",
+                },
+            },
+        },
+    ];
+
+    const leave = await Leave.aggregate(pipeline);
+
     if (!leave) {
         const error = appErrors.create(
             404,
@@ -166,7 +338,8 @@ export const getLeaveById = asyncWraper(async (req, res, next) => {
         );
         return next(error);
     }
-    res.status(200).json({ status: httpResponseText.SUCCESS, data: leave });
+    const leaveData = leave[0];
+    res.status(200).json({ status: httpResponseText.SUCCESS, data: leaveData });
 });
 
 export const updateLeave = asyncWraper(async (req, res, next) => {
@@ -419,5 +592,130 @@ export const deleteLeave = asyncWraper(async (req, res, next) => {
     res.status(200).json({
         status: httpResponseText.SUCCESS,
         data: { id: deletedLeave._id },
+    });
+});
+
+export const searchLeave = asyncWraper(async (req, res, next) => {
+    const { page, limit, date, employeeName } = req.query;
+
+    const limitNumber = parseInt(limit) || 10;
+    const pageNumber = parseInt(page) || 1;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const pipeline = [];
+
+    if (date) {
+        const searchDateStart = dayjs.utc(date).startOf("day").toDate();
+        const searchDateEnd = dayjs.utc(date).endOf("day").toDate();
+
+        pipeline.push({
+            $match: {
+                startDate: { $lte: searchDateEnd },
+                endDate: { $gte: searchDateStart },
+            },
+        });
+    }
+    const nameMatchStage = buildNameSearchQuery(
+        employeeName,
+        "employeeDetails.general.firstName",
+        "employeeDetails.general.lastName"
+    );
+
+    pipeline.push(
+        {
+            $lookup: {
+                from: "users",
+                localField: "employeeId",
+                foreignField: "_id",
+                as: "employeeDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$employeeDetails",
+                preserveNullAndEmptyArrays: false,
+            },
+        },
+        {
+            $match: nameMatchStage,
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "hrId",
+                foreignField: "_id",
+                as: "hrDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$hrDetails",
+                preserveNullAndEmptyArrays: true,
+            },
+        }
+    );
+
+    pipeline.push({
+        $facet: {
+            metadata: [{ $count: "totalRecords" }],
+            data: [
+                { $sort: { date: -1, _id: -1 } },
+                { $skip: skip },
+                { $limit: limitNumber },
+                {
+                    $project: {
+                        _id: 1,
+                        type: 1,
+                        startDate: 1,
+                        endDate: 1,
+                        status: 1,
+                        reason: 1,
+                        rejectReason: 1,
+                        attachment: 1,
+                        duration: 1,
+                        employee: {
+                            employeeId: "$employeeDetails._id",
+                            firstName: "$employeeDetails.general.firstName",
+                            lastName: "$employeeDetails.general.lastName",
+                            email: "$employeeDetails.general.email",
+                            phone: "$employeeDetails.general.phone",
+                            avatar: "$employeeDetails.general.avatar",
+                            department: "$employeeDetails.employee.department",
+                            jobTitle: "$employeeDetails.employee.jobTitle",
+                            annualLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.annual",
+                            sickLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.sick",
+                            casualLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.casual",
+                        },
+                        hrApprovedBy: {
+                            _id: "$hrDetails._id",
+                            firstName: "$hrDetails.general.firstName",
+                            lastName: "$hrDetails.general.lastName",
+                            avatar: "$hrDetails.general.avatar",
+                        },
+                    },
+                },
+            ],
+        },
+    });
+
+    const result = await Leave.aggregate(pipeline);
+    const leaveData = result[0].data;
+    const totalRecords = result[0].metadata[0]?.totalRecords || 0;
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: {
+            leave: leaveData,
+            pagination: {
+                totalRecords,
+                totalPages,
+                currentPage: pageNumber,
+                limit: limitNumber,
+            },
+        },
     });
 });

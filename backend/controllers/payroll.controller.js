@@ -7,6 +7,7 @@ import appErrors from "../utils/errors.js";
 import { httpResponseText } from "../utils/httpResponseText.js";
 import { asyncWraper } from "../Middleware/asyncWraper.js";
 import dayjs from "dayjs";
+import { buildNameSearchQuery } from "../utils/searchHelper.js";
 
 export const generatePayrollDraft = asyncWraper(async (req, res, next) => {
     let { month, year } = req.body;
@@ -710,6 +711,128 @@ export const getYearlyPayrollChart = asyncWraper(async (req, res, next) => {
         status: httpResponseText.SUCCESS,
         data: {
             yearlyOverview: formattedData,
+        },
+    });
+});
+
+export const searchPayroll = asyncWraper(async (req, res, next) => {
+    const { page, limit, month , year, employeeName } = req.query;
+
+    const limitNumber = parseInt(limit) || 10;
+    const pageNumber = parseInt(page) || 1;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const pipeline = [];
+
+    if (month && year) {
+        pipeline.push({
+            $match: {
+                month: parseInt(month),
+                year: parseInt(year),
+            },
+        });
+    }
+    const nameMatchStage = buildNameSearchQuery(
+        employeeName,
+        "employeeDetails.general.firstName",
+        "employeeDetails.general.lastName"
+    );
+
+    pipeline.push(
+        {
+            $lookup: {
+                from: "users",
+                localField: "employeeId",
+                foreignField: "_id",
+                as: "employeeDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$employeeDetails",
+                preserveNullAndEmptyArrays: false,
+            },
+        },
+        {
+            $match: nameMatchStage,
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "hrId",
+                foreignField: "_id",
+                as: "hrDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$hrDetails",
+                preserveNullAndEmptyArrays: true,
+            },
+        }
+    );
+
+    pipeline.push({
+        $facet: {
+            metadata: [{ $count: "totalRecords" }],
+            data: [
+                { $sort: { date: -1, _id: -1 } },
+                { $skip: skip },
+                { $limit: limitNumber },
+                {
+                    $project: {
+                        _id: 1,
+                        type: 1,
+                        startDate: 1,
+                        endDate: 1,
+                        status: 1,
+                        reason: 1,
+                        rejectReason: 1,
+                        attachment: 1,
+                        duration: 1,
+                        employee: {
+                            employeeId: "$employeeDetails._id",
+                            firstName: "$employeeDetails.general.firstName",
+                            lastName: "$employeeDetails.general.lastName",
+                            email: "$employeeDetails.general.email",
+                            phone: "$employeeDetails.general.phone",
+                            avatar: "$employeeDetails.general.avatar",
+                            department: "$employeeDetails.employee.department",
+                            jobTitle: "$employeeDetails.employee.jobTitle",
+                            annualLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.annual",
+                            sickLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.sick",
+                            casualLeaveBalance:
+                                "$employeeDetails.employee.leaveBalance.casual",
+                        },
+                        hrApprovedBy: {
+                            _id: "$hrDetails._id",
+                            firstName: "$hrDetails.general.firstName",
+                            lastName: "$hrDetails.general.lastName",
+                            avatar: "$hrDetails.general.avatar",
+                        },
+                    },
+                },
+            ],
+        },
+    });
+
+    const result = await Leave.aggregate(pipeline);
+    const leaveData = result[0].data;
+    const totalRecords = result[0].metadata[0]?.totalRecords || 0;
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: {
+            leave: leaveData,
+            pagination: {
+                totalRecords,
+                totalPages,
+                currentPage: pageNumber,
+                limit: limitNumber,
+            },
         },
     });
 });
