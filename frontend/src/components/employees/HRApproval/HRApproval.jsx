@@ -1,11 +1,12 @@
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllLeaves, updateLeaveStatus } from "../../../store/slices/leaveSlice"
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import BaseCard from "../../UI/Card";
 
 function HRApproval() {
-
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { list, loading } = useSelector((state) => state.leaves);
   useEffect(() => {
@@ -29,7 +30,7 @@ function HRApproval() {
           <h1 className="text-white text-xl font-semibold tracking-tight">
             Leave application
           </h1>
-          <button className="w-10 h-10 rounded-xl bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center transition-all duration-200 hover:scale-105">
+          <button className="w-10 h-10 rounded-xl bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center transition-all duration-200 hover:scale-105" onClick={() => navigate("/leave")}>
             <svg
               className="w-4 h-4 text-white"
               fill="none"

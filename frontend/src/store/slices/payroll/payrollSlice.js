@@ -1,5 +1,22 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice,createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "../../../services/axios"
 
+// Fetch Payroll Analytics
+export const fetchPayrollSummary = createAsyncThunk(
+  "payroll/fetchPayrollSummary",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `/payroll/summary-status`
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch payroll summary"
+      );
+    }
+  }
+);
 const getInitialRange = () => {
   const now = new Date();
   const year = now.getFullYear();
@@ -14,17 +31,38 @@ const getInitialRange = () => {
   
   return { start, end };
 };
+
 const payrollSlice=createSlice({
     name:"payroll",
     initialState:{
-        selectedRange:getInitialRange()
+        selectedRange:getInitialRange(),
+        analytics:null,
+        loading: false,
+        error: null,
     },
      reducers: {
         // ضيفي الـ Action ده عشان نقدر نغير التاريخ
         setPayrollRange: (state, action) => {
             state.selectedRange = action.payload;
         }
-    }
+    },
+    extraReducers:(builder)=>{
+        builder
+        .addCase(fetchPayrollSummary.pending,(state)=>{
+            state.loading=true;
+            state.error=null;
+        })
+        .addCase(fetchPayrollSummary.fulfilled,(state,action)=>{
+            state.loading=false;
+            state.analytics=action.payload;
+           
+        })
+        .addCase(fetchPayrollSummary.rejected,(state,action)=>{
+            state.loading=false;
+            state.error=action.payload;
+        })
+
+    },
 
 });
 export const { setPayrollRange } = payrollSlice.actions;

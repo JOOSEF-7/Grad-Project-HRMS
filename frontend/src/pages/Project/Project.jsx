@@ -75,7 +75,7 @@ export default function Project() {
   };
 
   return (
-    <div className="p-6 space-y-6 min-h-screen bg-gradient-to-r from-[#0B1320] via-[#0F1E35] to-[#0B1320]">
+    <div className="max-w-[1650px] mx-auto p-4 bg-transparent">
       <ProjectHeader />
       <DndContext onDragEnd={handleDragEnd}>
         <div className="flex gap-6 overflow-x-auto pb-4">

@@ -75,8 +75,8 @@ const Dashboard = () => {
             filter ={"Daily"}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <EmployeeStatus data={analytics?.employeeStatus} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <EmployeeStatus data={analytics?.employeeStatus} pieStripes={"Part-time"} title={"Employee status"}/>
             <JobApplicants applicants={analytics?.recentApplicants} />
           </div>
         </div>
