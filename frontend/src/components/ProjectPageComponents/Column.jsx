@@ -24,7 +24,7 @@ export default function Column({ id, title, tasks }) {
   return (
     <div
       ref={setNodeRef}
-      className="bg-[#1B1E22] rounded-2xl p-4 w-[320px] flex-shrink-0 border border-white/10"
+      className="bg-gradient-to-br from-transparent/20 to-45% to-[#182731] p-7 rounded-[2rem] w-[320px] flex-shrink-0 border border-white/10"
     >
       <h3 className="text-white font-semibold mb-4">{title}</h3>
 

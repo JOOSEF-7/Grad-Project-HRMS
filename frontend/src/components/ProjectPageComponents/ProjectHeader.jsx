@@ -18,8 +18,10 @@ export default function ProjectHeader() {
 
   return (
     <>
-      <div className="flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-white text-2xl font-semibold">Project</h1>
+      <div className="flex justify-between items-center flex-wrap mb-4 gap-4">
+         <h1 className="text-2xl font-bold text-white tracking-tight">
+          Projects
+        </h1>
 
         <div className="flex gap-3 items-center flex-wrap">
           {stats.map((s) => (
@@ -30,7 +32,7 @@ export default function ProjectHeader() {
 
           <button
             onClick={() => setOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-white transition"
+            className="bg-[#0095ff] hover:bg-[#0081dd] text-white px-6 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-lg transition-all active:scale-95 disabled:opacity-50"
           >
             <Plus size={16} />
             Add project
