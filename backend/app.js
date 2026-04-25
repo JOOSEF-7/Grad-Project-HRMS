@@ -34,12 +34,12 @@ if (!fs.existsSync(logsDir)) {
 
 const app = express();
 
-const accessLogStream = fs.createWriteStream(path.join(logsDir, "access.log"), {
-    flags: "a",
-});
+// const accessLogStream = fs.createWriteStream(path.join(logsDir, "access.log"), {
+//     flags: "a",
+// });
 
 app.use(express.json());
-app.use(morgan("combined", { stream: accessLogStream }));
+// app.use(morgan("combined", { stream: accessLogStream }));
 app.use(morgan("dev"));
 app.use(cors());
 app.use(helmet());
