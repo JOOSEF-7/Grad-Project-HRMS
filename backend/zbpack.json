@@ -1,0 +1,8 @@
+{
+    "build": {
+        "framework": "nodejs"
+    },
+    "run": {
+        "start_command": "node app.js"
+    }
+}
