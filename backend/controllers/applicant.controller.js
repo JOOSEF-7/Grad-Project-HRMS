@@ -137,3 +137,126 @@ export const deleteApplicant = asyncWraper(async (req, res, next) => {
     }
     res.json({ status: httpResponseText.SUCCESS, data: null });
 });
+
+
+export const getHiringStatistics = asyncWraper(async (req, res, next) => {
+    const filterStatus = req.query.status; 
+    
+    const matchCondition = filterStatus && filterStatus !== "All" 
+        ? { status: filterStatus } 
+        : {};
+
+    const dashboardData = await Applicant.aggregate([
+        {
+            $facet: {
+                "counters": [
+                    {
+                        $group: {
+                            _id: null,
+                            totalApplicants: { $sum: 1 },
+                            interviewing: {
+                                $sum: { $cond: [{ $eq: ["$status", "Interviewing"] }, 1, 0] }
+                            },
+                            hired: {
+                                $sum: { $cond: [{ $eq: ["$status", "Hired"] }, 1, 0] }
+                            },
+                            rejected: {
+                                $sum: { $cond: [{ $eq: ["$status", "Rejected"] }, 1, 0] }
+                            },
+                            applied: {
+                                $sum: { $cond: [{ $eq: ["$status", "Applied"] }, 1, 0] }
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            totalApplicants: 1,
+                            interviewing: 1,
+                            hired: 1,
+                            rejected: 1,
+                            applied: 1
+                        }
+                    }
+                ],
+
+                "applicantsList": [
+                    { $match: matchCondition },
+                    { $sort: { createdAt: -1 } },
+                    {
+                        $project: {
+                            firstName: 1,
+                            lastName: 1,
+                            avatar: 1,
+                            status: 1,
+                            "experience.position": 1,
+                            createdAt: 1
+                        }
+                    }
+                ]
+            }
+        }
+    ]);
+
+    const stats = dashboardData[0].counters[0] || { 
+        totalApplicants: 0, 
+        interviewing: 0, 
+        hired: 0, 
+        rejected: 0, 
+        applied: 0 
+    };
+    
+    const list = dashboardData[0].applicantsList || [];
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: {
+            stats,
+            applicantsList: list
+        }
+    });
+});
+
+
+export const searchApplicants = asyncWraper(async (req, res, next) => {
+    const { name } = req.query;
+
+    if (!name) {
+        return res.status(200).json({ status: httpResponseText.SUCCESS, data: { results: [] } });
+    }
+
+    const results = await Applicant.aggregate([
+        {
+            $match: {
+                $or: [
+                    { firstName: { $regex: name, $options: "i" } },
+                    { lastName: { $regex: name, $options: "i" } },
+                    { 
+                        $expr: {
+                            $regexMatch: {
+                                input: { $concat: ["$firstName", " ", "$lastName"] },
+                                regex: name,
+                                options: "i"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+                avatar: 1,
+                status: 1,
+                "experience.position": 1
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: { results }
+    });
+});

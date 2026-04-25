@@ -135,3 +135,29 @@ export const deleteJob = asyncWraper(async (req, res, next) => {
     }
     res.json({ status: httpResponseText.SUCCESS, data: null });
 });
+
+
+export const searchJobs = asyncWraper(async (req, res, next) => {
+    const { title } = req.query;
+
+    if (!title) {
+        return res.status(200).json({ status: httpResponseText.SUCCESS, data: { results: [] } });
+    }
+
+    const results = await Job.aggregate([
+        { $match: { title: { $regex: title, $options: "i" } } },
+        {
+            $project: {
+                _id: 1,
+                title: 1,
+                status: 1,
+                date: 1
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: { results }
+    });
+});

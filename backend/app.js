@@ -1,3 +1,6 @@
+import dns from "dns";
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -23,6 +26,7 @@ import scheduleAttendanceJob from "./jobs/attendanceJob.js";
 import jobRouter from "./routes/jobs.routes.js";
 import applicantRouter from "./routes/applicants.routes.js";
 import scheduleresetDefaultLeaves from "./jobs/resetDefaultLeaves.js";
+import dashboardStatisticsRouter from "./routes/dashboardStatistics.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,9 +55,9 @@ app.use("/api/jobs", jobRouter);
 app.use("/api/applicants", applicantRouter);
 app.use("/api/leaves", leaveRouter);
 app.use("/api/payroll", payrollRouter);
-
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/dashboard-statistics", dashboardStatisticsRouter);
 
 app.all(/(.*)/, (req, res, next) => {
     const error = appErrors.create(404, "the route is not handeld", "Fail");

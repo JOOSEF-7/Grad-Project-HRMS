@@ -1,21 +1,4 @@
 
-// import ProjectHeader from "../../components/ProjectPageComponents/ProjectHeader.jsx";
-// import Column from "../../components/ProjectPageComponents/Column.jsx";
-
-// const columns = ["Todo", "On-going", "Pending", "Completed"];
-
-// export default function Project() {
-//   return (
-//     <div className="p-6 space-y-6 bg-[#0F1115] min-h-screen">
-//       <ProjectHeader />
-//       <div className="flex gap-6 overflow-x-auto pb-4">
-//         {columns.map((col) => (
-//           <Column key={col} title={col} />
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
 import { useState, useEffect } from "react";
 import { DndContext } from "@dnd-kit/core";
 import Column from "../../components/ProjectPageComponents/Column.jsx";
@@ -75,7 +58,7 @@ export default function Project() {
   };
 
   return (
-    <div className="p-6 space-y-6 min-h-screen bg-gradient-to-r from-[#0B1320] via-[#0F1E35] to-[#0B1320]">
+    <div className="max-w-[1650px] mx-auto p-4 bg-transparent">
       <ProjectHeader />
       <DndContext onDragEnd={handleDragEnd}>
         <div className="flex gap-6 overflow-x-auto pb-4">

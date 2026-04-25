@@ -13,7 +13,7 @@ const Sidebar = () => {
     { name: "Payroll", icon: "fas fa-wallet", path: "/payroll" },
     { name: "Hiring", icon: "fas fa-user-plus", path: "/hiring" },
     { name: "Attendance", icon: "fas fa-calendar-check", path: "/attendance" },
-    { name: "Leave", icon: "fas fa-envelope-open-text", path: "/leave" },
+    { name: "Leave", icon: "fas fa-envelope-open-text", path: "/leave-requests" },
     { name: "Performance", icon: "fas fa-chart-line", path: "/performance" },
   ];
 

@@ -6,6 +6,8 @@ import {
     updateProject,
     deleteProject,
     createProject,
+    searchProjects,
+    getProjectStats,
 } from "../controllers/project.controller.js";
 import { verifyToken } from "../guards/verifyToken.js";
 import { allowedTo } from "../guards/allowedTo.js";
@@ -13,14 +15,11 @@ import { validate } from "../Middleware/validate.Middelware.js";
 import {
     validateProjectSchema,
     updateValidateProjectSchema,
+    searchProjectsSchema,
 } from "../validators/project.validation.js";
 import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 import upload from "../Middleware/multerConfig.js";
-<<<<<<< HEAD
-import { getProjectStats } from "../controllers/projectStatus.controller.js";
-=======
 import { processUploadedFile } from "../Middleware/processUploads.js";
->>>>>>> Youssef
 
 router
     .route("/")
@@ -32,10 +31,7 @@ router
             { name: "general[avatar]", maxCount: 1 },
             { name: "documents", maxCount: 10 },
         ]),
-<<<<<<< HEAD
-=======
         processUploadedFile,
->>>>>>> Youssef
         setFilesToBody({
             "general[avatar]": "general.avatar",
             documents: "documents",
@@ -57,4 +53,5 @@ router
     )
     .delete(verifyToken, allowedTo("HR", "MANAGER"), deleteProject);
 
+router.route("/search").get(verifyToken,allowedTo("HR"), validate(searchProjectsSchema), searchProjects);
 export default router;

@@ -7,9 +7,10 @@ import {
     getUserById,
     updateUser,
     deleteUser,
+    searchEmployees,
 } from "../controllers/user.controller.js";
 
-import { updateValidateUserSchema } from "../validators/users.validation.js";
+import { updateValidateUserSchema, searchEmployeesSchema } from "../validators/users.validation.js";
 import { validateIdSchema } from "../validators/idSchema.validation.js";
 import upload from "../Middleware/multerConfig.js";
 import { processUploadedFile } from "../Middleware/processUploads.js";
@@ -33,4 +34,5 @@ router
     )
     .delete(verifyToken, allowedTo("HR"), deleteUser);
 
+router.route("/search").get(verifyToken, allowedTo("HR"), validate(searchEmployeesSchema), searchEmployees);
 export default router;

@@ -19,6 +19,7 @@ import projectReducer from "./slices/projectSlice";
 import hiringReducer from "./slices/hiringSlice";
 import leaveReducer from "./slices/leaveSlice";
 import attendanceReducer from "./slices/attendance/attendanceSlice";
+import payrollReducer from "./slices/payroll/payrollSlice"
 
 
 export const store = configureStore({
@@ -43,6 +44,7 @@ export const store = configureStore({
     leaves: leaveReducer,
     hiring: hiringReducer,
     attendance: attendanceReducer,
+    payroll:payrollReducer
     
   },
 });

@@ -53,3 +53,20 @@ export const validateApplicantSchema = z.object({
 export const validateUpdateApplicantSchema = z.object({
     body: validateApplicantSchema.shape.body.partial(),
 });
+
+export const validateHiringStatisticsSchema = z.object({
+    query: z.object({
+        status: z
+            .enum(["Applied", "Interviewing", "Hired", "Rejected", "All"])
+            .optional(),
+    }),
+});
+
+export const searchApplicantsSchema = z.object({
+    query: z.object({
+        name: z
+            .string({ required_error: "Search name is required" })
+            .min(1, "Search name cannot be empty")
+            .trim(),
+    }),
+});

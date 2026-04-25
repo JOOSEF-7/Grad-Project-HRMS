@@ -160,3 +160,64 @@ export const deleteProject = asyncWraper(async (req, res, next) => {
     }
     res.json({ status: httpResponseText.SUCCESS, data: null });
 });
+
+
+export const getProjectStats = asyncWraper(async (req, res, next) => {
+    const stats = await Project.aggregate([
+        {
+            $group: {
+                _id: null,
+                total: { $sum: 1 },
+                ongoing: {
+                    $sum: { $cond: [{ $eq: ["$assignment.status", "On-going"] }, 1, 0] }
+                },
+                pending: {
+                    $sum: { $cond: [{ $eq: ["$assignment.status", "Pending"] }, 1, 0] }
+                },
+                completed: {
+                    $sum: { $cond: [{ $eq: ["$assignment.status", "Completed"] }, 1, 0] }
+                }
+            }
+        }
+    ]);
+
+    const data = stats[0] || { total: 0, ongoing: 0, pending: 0, completed: 0 };
+
+    const headers = [
+        { title: "All Project", value: data.total },
+        { title: "On-going", value: data.ongoing },
+        { title: "Pending", value: data.pending },
+        { title: "Completed", value: data.completed },
+    ];
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: headers,
+    });
+});
+
+
+export const searchProjects = asyncWraper(async (req, res, next) => {
+    const { name } = req.query;
+
+    if (!name) {
+        return res.status(200).json({ status: httpResponseText.SUCCESS, data: { results: [] } });
+    }
+
+    const results = await Project.aggregate([
+        { $match: { "general.name": { $regex: name, $options: "i" } } },
+        {
+            $project: {
+                _id: 1,
+                "general.name": 1,
+                "general.avatar": 1,
+                "assignment.status": 1
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: { results }
+    });
+});

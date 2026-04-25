@@ -85,7 +85,7 @@ const Pagination = ({
 
               {/* Records per page */}
               <div className="flex items-center gap-3">
-                <span className="text-sm text-slate-400">Show 10 record per page</span>
+                <span className="text-sm text-slate-400">Show 5 record per page</span>
                 <div className="relative">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
