@@ -28,16 +28,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const logsDir = path.join(__dirname, "logs");
-if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir);
-}
+// const logsDir = path.join(__dirname, "logs");
+// if (!fs.existsSync(logsDir)) {
+//     fs.mkdirSync(logsDir);
+// }
 
-const accessLogStream = fs.createWriteStream(path.join(logsDir, "access.log"), {
-    flags: "a",
-});
+// const accessLogStream = fs.createWriteStream(path.join(logsDir, "access.log"), {
+//     flags: "a",
+// });
 
-app.use(morgan("combined", { stream: accessLogStream }));
+// app.use(morgan("combined", { stream: accessLogStream }));
 
 app.use(express.json());
 
