@@ -1,4 +1,4 @@
-import LeaveHero from "../../../components/LeavePageComponents/LeaveHero.jsx";
+// import LeaveHero from "../../../components/LeavePageComponents/LeaveHero.jsx";
 import LeaveTable from "../../../components/LeavePageComponents/LeaveTable.jsx";
 
 
@@ -18,7 +18,7 @@ export default function LeaveRequests() {
 
   return (
     <div className="p-6">
-      <LeaveHero />
+      {/* <LeaveHero /> */}
       <LeaveTable leaves={leaves} />
     </div>
   );

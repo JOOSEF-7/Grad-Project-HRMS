@@ -32,11 +32,11 @@ export default function LeaveDetails() {
   return (
     <div className="p-6">
       {/* Hero */}
-      <div className="bg-[#233A9F] rounded-2xl p-10 flex items-center justify-between mb-10">
+      {/* <div className="bg-[#233A9F] rounded-2xl p-10 flex items-center justify-between mb-10">
         <h1 className="text-2xl font-semibold text-white">
           Leave Request Details
         </h1>
-      </div>
+      </div> */}
 
       {/* التفاصيل */}
       <div className="w-full text-white">
