@@ -27,10 +27,10 @@ import scheduleresetDefaultLeaves from "./jobs/resetDefaultLeaves.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const logsDir = path.join(__dirname, "logs");
-if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir);
-}
+// const logsDir = path.join(__dirname, "logs");
+// if (!fs.existsSync(logsDir)) {
+//     fs.mkdirSync(logsDir);
+// }
 
 const app = express();
 
