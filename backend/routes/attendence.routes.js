@@ -17,7 +17,7 @@ import {
 } from "../validators/attendance.valiation.js";
 import { verifyToken } from "../guards/verifyToken.js";
 import { allowedTo } from "../guards/allowedTo.js";
-import { searchQuerySchema } from "../validators/common.validation.js";
+import { dailySearchSchema } from "../validators/common.validation.js";
 
 const router = Router();
 
@@ -29,7 +29,7 @@ router
         validate(getAllAttendanceQuerySchema),
         getAllAttandence
     );
-router.get("/search", validate(searchQuerySchema), searchAttendance);
+router.get("/search", validate(dailySearchSchema), searchAttendance);
 
 router
     .route("/employee/:id")

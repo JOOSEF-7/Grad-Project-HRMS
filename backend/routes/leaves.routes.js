@@ -20,7 +20,7 @@ import {
 import upload from "../Middleware/multerConfig.js";
 import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 import {
-    searchQuerySchema,
+    dailySearchSchema,
     validateIdParams,
 } from "../validators/common.validation.js";
 import { getAllLeavesQuerySchema } from "../validators/leave.validation.js";
@@ -35,7 +35,7 @@ router
         validate(getAllLeavesQuerySchema),
         getAllLeaves
     );
-router.get("/search", validate(searchQuerySchema), searchLeave);
+router.get("/search", validate(dailySearchSchema), searchLeave);
 
 router
     .route("/employee/:id")

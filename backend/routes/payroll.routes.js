@@ -9,6 +9,7 @@ import {
     payAllPending,
     getMonthlyDashboardStats,
     getYearlyPayrollChart,
+    searchPayroll,
 } from "../controllers/payroll.controller.js";
 
 import { verifyToken } from "../guards/verifyToken.js";
@@ -17,6 +18,7 @@ import { validate } from "../Middleware/validate.Middelware.js";
 
 import { generatePayrolSchema } from "../validators/payroll.validation.js";
 import {
+    monthlySearchSchema,
     validateMonthYearQuery,
     validateYearQuery,
 } from "../validators/common.validation.js";
@@ -30,6 +32,8 @@ router.post(
     validate(generatePayrolSchema),
     generatePayrollDraft
 );
+
+router.get("/search", validate(monthlySearchSchema), searchPayroll);
 
 router.post(
     "/approve",

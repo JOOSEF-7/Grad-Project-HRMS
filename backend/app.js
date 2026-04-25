@@ -16,6 +16,8 @@ import appErrors from "./utils/errors.js";
 import projectRouter from "./routes/projects.routes.js";
 import taskRouter from "./routes/tasks.routes.js";
 import leaveRouter from "./routes/leaves.routes.js";
+
+import RequestRouter from "./routes/request.routes.js";
 import attendanceRoutes from "./routes/attendence.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import payrollRouter from "./routes/payroll.routes.js";
@@ -46,6 +48,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/leaves", leaveRouter);
+app.use("/api/requests", RequestRouter);
 app.use("/api/payroll", payrollRouter);
 
 app.use("/api/attendance", attendanceRoutes);

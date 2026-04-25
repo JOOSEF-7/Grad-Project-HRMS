@@ -7,80 +7,108 @@ import { generateToken } from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendEmail } from "../utils/sendEmail.js";
+import { deleteFromCloudinary } from "../utils/cloudinaryHelper.js";
 
 export const register = asyncWraper(async (req, res, next) => {
     const { general, experience, employee } = req.body;
-    const oldUser = await User.findOne({ "general.email": general.email });
 
+    const oldUser = await User.findOne({ "general.email": general.email });
     if (oldUser) {
-        const error = appErrors.create(
-            400,
-            "User Already Exists",
-            httpResponseText.FAIL
+        if (general.avatar) await deleteFromCloudinary(general.avatar);
+        return next(
+            appErrors.create(400, "User Already Exists", httpResponseText.FAIL)
         );
-        return next(error);
     }
 
-    const hashedPassword = await bcrypt.hash(general.password, 10);
-    general.password = hashedPassword;
+    if (general?.rfidTag) {
+        const oldRfid = await User.findOne({
+            "general.rfidTag": general.rfidTag,
+        });
+        if (oldRfid) {
+            if (general.avatar) await deleteFromCloudinary(general.avatar);
+            return next(
+                appErrors.create(
+                    400,
+                    "RFID Tag is already assigned to another employee",
+                    httpResponseText.FAIL
+                )
+            );
+        }
+    }
 
-    const newUser = new User({ general, experience, employee });
+    try {
+        const generatedPassword = crypto.randomBytes(4).toString("hex");
 
-    const { accessToken, refreshToken } = generateToken({
-        email: newUser.general.email,
-        userId: newUser._id,
-        role: newUser.general.role,
-    });
-    res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 60 * 60 * 1000,
-    });
-    res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+        const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+        general.password = hashedPassword;
 
-    await newUser.save();
+        const newUser = new User({ general, experience, employee });
+        await newUser.save();
 
-    newUser.general.password = undefined;
-    newUser.__v = undefined;
-    newUser.general.passwordResetCode = undefined;
-    newUser.general.passwordResetExpires = undefined;
-    newUser.general.passwordResetVerified = undefined;
+        try {
+            await sendEmail({
+                email: newUser.general.email,
+                subject: "Welcome to the Team - Your Account Details",
+                message: `
+                    Dear ${newUser.general.firstName} ${newUser.general.lastName},
+                    
+                    Your account has been successfully created in the company's HR system.
+                    
+                    Here are your login credentials:
+                    Email: ${newUser.general.email}
+                    Temporary Password: ${generatedPassword}
+                    
+                    Please log in and change your password as soon as possible.
+                    
+                    Best Regards,
+                    HR Department
+                `,
+            });
+        } catch (emailError) {
+            await User.findByIdAndDelete(newUser._id);
+            if (general.avatar) await deleteFromCloudinary(general.avatar);
 
-    res.status(201).json({
-        status: httpResponseText.SUCCESS,
-        data: { newUser },
-    });
+            return next(
+                appErrors.create(
+                    500,
+                    "Failed to send welcome email. Employee registration aborted.",
+                    httpResponseText.FAIL
+                )
+            );
+        }
+
+        newUser.general.password = undefined;
+        newUser.__v = undefined;
+
+        res.status(201).json({
+            status: httpResponseText.SUCCESS,
+            message: "Employee registered successfully and welcome email sent.",
+            data: { newUser },
+        });
+    } catch (error) {
+        if (general.avatar) await deleteFromCloudinary(general.avatar);
+        return next(error);
+    }
 });
 
 export const login = asyncWraper(async (req, res, next) => {
     const { email, password } = req.body;
-    if (!email || !password) {
-        const error = appErrors.create(
-            400,
-            "the email and password required",
-            "Fail"
-        );
-        return next(error);
-    }
+
     const oldUser = await User.findOne({ "general.email": email });
     if (!oldUser) {
         const error = appErrors.create(
             400,
             "Invalid email or password",
-            "Fail"
+            httpResponseText.FAIL
         );
         return next(error);
     }
+
     const isMatchedPass = await bcrypt.compare(
         password,
         oldUser.general.password
     );
+
     if (!isMatchedPass) {
         const error = appErrors.create(
             400,
@@ -89,40 +117,47 @@ export const login = asyncWraper(async (req, res, next) => {
         );
         return next(error);
     }
+
     const { accessToken, refreshToken } = generateToken({
         email: oldUser.general.email,
         userId: oldUser._id,
         role: oldUser.general.role,
     });
+
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         maxAge: 7 * 60 * 60 * 1000,
     });
+
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    oldUser.general.password = undefined;
-    oldUser.__v = undefined;
-    oldUser.general.passwordResetCode = undefined;
-    oldUser.general.passwordResetExpires = undefined;
-    oldUser.general.passwordResetVerified = undefined;
+
+    const userResponse = oldUser.toObject();
+    delete userResponse.general.password;
+    delete userResponse.__v;
+    delete userResponse.general.passwordResetCode;
+    delete userResponse.general.passwordResetExpires;
+    delete userResponse.general.passwordResetVerified;
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        message: "successfully login",
+        message: "Successfully logged in",
         data: {
-            user: oldUser,
+            user: userResponse,
             accessToken,
+            refreshToken,
         },
     });
 });
 
 export const refreshUserToken = asyncWraper(async (req, res, next) => {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!refreshToken) {
         const error = appErrors.create(401, "you must log in", FAIL);
         return next(error);
@@ -161,25 +196,36 @@ export const logout = asyncWraper(async (req, res, next) => {
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
     };
+
     res.clearCookie("accessToken", cookieOptions);
     res.clearCookie("refreshToken", cookieOptions);
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        message: "logout successfully",
+        message: "Logged out successfully",
     });
 });
 
 export const forgetPassword = asyncWraper(async (req, res, next) => {
     const { email } = req.body;
     if (!email) {
-        const error = appErrors.create(400, "email is required", FAIL);
+        const error = appErrors.create(
+            400,
+            "Email is required",
+            httpResponseText.FAIL
+        );
         return next(error);
     }
     const oldUser = await User.findOne({ "general.email": email });
     if (!oldUser) {
-        const error = appErrors.create(404, "user not found", FAIL);
+        const error = appErrors.create(
+            404,
+            "User not found",
+            httpResponseText.FAIL
+        );
         return next(error);
     }
+
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     const hashedResetCode = crypto
@@ -217,21 +263,24 @@ export const forgetPassword = asyncWraper(async (req, res, next) => {
 });
 
 export const verifyResetCode = asyncWraper(async (req, res, next) => {
-    const { resetCode } = req.body;
-    if (!resetCode) {
+    const { email, resetCode } = req.body;
+
+    if (!email || !resetCode) {
         const error = appErrors.create(
             400,
-            "resetCode is required",
+            "Email and resetCode are required",
             httpResponseText.FAIL
         );
         return next(error);
     }
+
     const hashedResetCode = crypto
         .createHash("sha256")
         .update(resetCode)
         .digest("hex");
 
     const user = await User.findOne({
+        "general.email": email,
         "general.passwordResetCode": hashedResetCode,
         "general.passwordResetExpires": { $gt: Date.now() },
     });
@@ -239,8 +288,8 @@ export const verifyResetCode = asyncWraper(async (req, res, next) => {
     if (!user) {
         const error = appErrors.create(
             400,
-            "Invalid or expired reset code",
-            "Fail"
+            "Invalid or expired reset code for this email",
+            httpResponseText.FAIL
         );
         return next(error);
     }
@@ -250,9 +299,10 @@ export const verifyResetCode = asyncWraper(async (req, res, next) => {
     user.general.passwordResetExpires = null;
     user.markModified("general");
     await user.save({ validateBeforeSave: false });
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        message: "reset code verified successfully",
+        message: "Reset code verified successfully",
     });
 });
 

@@ -716,7 +716,7 @@ export const getYearlyPayrollChart = asyncWraper(async (req, res, next) => {
 });
 
 export const searchPayroll = asyncWraper(async (req, res, next) => {
-    const { page, limit, month , year, employeeName } = req.query;
+    const { page, limit, month, year, employeeName } = req.query;
 
     const limitNumber = parseInt(limit) || 10;
     const pageNumber = parseInt(page) || 1;
@@ -782,14 +782,15 @@ export const searchPayroll = asyncWraper(async (req, res, next) => {
                 {
                     $project: {
                         _id: 1,
-                        type: 1,
-                        startDate: 1,
-                        endDate: 1,
+                        month: 1,
+                        year: 1,
+                        baseSalary: 1,
+                        netSalary: 1,
+                        deductions: 1,
+                        daysPresent: 1,
+                        daysAbsent: 1,
                         status: 1,
-                        reason: 1,
-                        rejectReason: 1,
-                        attachment: 1,
-                        duration: 1,
+                        employeeId: 1,
                         employee: {
                             employeeId: "$employeeDetails._id",
                             firstName: "$employeeDetails.general.firstName",
@@ -799,12 +800,7 @@ export const searchPayroll = asyncWraper(async (req, res, next) => {
                             avatar: "$employeeDetails.general.avatar",
                             department: "$employeeDetails.employee.department",
                             jobTitle: "$employeeDetails.employee.jobTitle",
-                            annualLeaveBalance:
-                                "$employeeDetails.employee.leaveBalance.annual",
-                            sickLeaveBalance:
-                                "$employeeDetails.employee.leaveBalance.sick",
-                            casualLeaveBalance:
-                                "$employeeDetails.employee.leaveBalance.casual",
+                            jobType: "$employeeDetails.employee.jobType",
                         },
                         hrApprovedBy: {
                             _id: "$hrDetails._id",
@@ -818,7 +814,7 @@ export const searchPayroll = asyncWraper(async (req, res, next) => {
         },
     });
 
-    const result = await Leave.aggregate(pipeline);
+    const result = await Payroll.aggregate(pipeline);
     const leaveData = result[0].data;
     const totalRecords = result[0].metadata[0]?.totalRecords || 0;
     const totalPages = Math.ceil(totalRecords / limitNumber);

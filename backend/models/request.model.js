@@ -3,45 +3,67 @@ import { modelConfig } from "../utils/modelConfig.js";
 
 const requestSchema = new mongoose.Schema(
     {
-        employee: {
+        employeeId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: [true, "Employee reference is required"],
+            required: true,
         },
+
         type: {
             type: String,
-            enum: ["Vacation", "Permission", "Salary Increase", "Complaint", "Equipment"],
-            required: [true, "Request type is required"],
+            enum: [
+                "HR Letter",
+                "Payroll Inquiry",
+                "Complaint",
+                "IT Support",
+                "Other",
+            ],
+            required: true,
         },
+
+        title: {
+            type: String,
+            required: true,
+            trim: true,
+            maxlength: 100,
+        },
+        description: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+
         status: {
             type: String,
             enum: ["Pending", "Approved", "Rejected"],
             default: "Pending",
         },
-        title: {
+
+        priority: {
             type: String,
-            required: [true, "Title is required"],
+            enum: ["Low", "Medium", "High"],
+            default: "Medium",
         },
-        description: {
+
+        attachments: {
             type: String,
-            required: [true, "Description is required"],
-            minLength: [10, "Description must be at least 10 characters long"],
         },
-        attachmentUrl: {
-            type: String,
+
+        hrResponse: {
+            text: {
+                type: String,
+                default: null,
+            },
+            attachments: {
+                type: String,
+                default: null,
+            },
+        },
+
+        handledBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
             default: null,
-        },
-        startDate: {
-            type: Date,
-            required: function () {
-                return this.type === "Vacation" || this.type === "Permission";
-            },
-        },
-        endDate: {
-            type: Date,
-            required: function () {
-                return this.type === "Vacation";
-            },
         },
     },
     modelConfig

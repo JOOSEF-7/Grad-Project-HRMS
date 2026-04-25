@@ -560,6 +560,7 @@ export const searchAttendance = asyncWraper(async (req, res, next) => {
     });
 
     const result = await Attendance.aggregate(pipeline);
+    console.log(result);
     const attendanceData = result[0].data;
     const totalRecords = result[0].metadata[0]?.totalRecords || 0;
     const totalPages = Math.ceil(totalRecords / limitNumber);

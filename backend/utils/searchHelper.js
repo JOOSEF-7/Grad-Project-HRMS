@@ -1,4 +1,3 @@
-// utils/searchHelper.js
 export const buildNameSearchQuery = (employeeName, fNamePath, lNamePath) => {
     if (!employeeName) return {};
 
@@ -13,13 +12,13 @@ export const buildNameSearchQuery = (employeeName, fNamePath, lNamePath) => {
             { [fNamePath]: { $regex: terms[0], $options: "i" } },
             { [lNamePath]: { $regex: terms[0], $options: "i" } },
         ];
-    } else if (terms.length > 1) {
-        matchStage.$and = terms.map((term) => ({
-            $or: [
-                { [fNamePath]: { $regex: term, $options: "i" } },
-                { [lNamePath]: { $regex: term, $options: "i" } },
-            ],
-        }));
+    } else if (terms.length >= 2) {
+        const firstTerm = terms[0];
+        const restOfTerms = terms.slice(1).join(" ");
+        matchStage.$and = [
+            { [fNamePath]: { $regex: firstTerm, $options: "i" } },
+            { [lNamePath]: { $regex: restOfTerms, $options: "i" } },
+        ];
     }
 
     return matchStage;

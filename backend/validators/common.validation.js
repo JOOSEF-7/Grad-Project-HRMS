@@ -62,17 +62,32 @@ export const validateYearQuery = z.object({
     }),
 });
 
-export const searchQuerySchema = z.object({
-    query: z.object({
-        employeeName: z
-            .string({
-                required_error: "Search term is required",
-                invalid_type_error: "Search term must be a string",
-            })
-            .min(1, "Search term cannot be empty"),
+const baseSearchSchema = z.object({
+    employeeName: z
+        .string({
+            required_error: "Search term is required",
+            invalid_type_error: "Search term must be a string",
+        })
+        .min(1, "Search term cannot be empty"),
+    page: pageValidation,
+    limit: limitValidation,
+});
 
+export const dailySearchSchema = z.object({
+    query: baseSearchSchema.extend({
         date: dateValidation,
-        page: pageValidation,
-        limit: limitValidation,
     }),
+});
+
+export const monthlySearchSchema = z.object({
+    query: baseSearchSchema
+        .extend({
+            month: monthValidation.optional(),
+            year: yearValidation.optional(),
+        })
+        .refine((data) => !!data.month === !!data.year, {
+            message:
+                "You must provide both 'month' and 'year' together, or neither.",
+            path: ["month"],
+        }),
 });
