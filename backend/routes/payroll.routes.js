@@ -19,7 +19,8 @@ import { validate } from "../Middleware/validate.Middelware.js";
 import { generatePayrolSchema } from "../validators/payroll.validation.js";
 import {
     monthlySearchSchema,
-    validateMonthYearQuery,
+    monthYearBodySchema,
+    monthYearQuerySchema,
     validateYearQuery,
 } from "../validators/common.validation.js";
 
@@ -47,7 +48,7 @@ router.patch(
     "/pay/bulk",
     verifyToken,
     allowedTo("HR", "MANAGER"),
-    validate(validateMonthYearQuery),
+    validate(monthYearBodySchema),
     payingOnemonthtoEmployees
 );
 
@@ -71,7 +72,7 @@ router.get(
     "/dashboard/monthly",
     verifyToken,
     allowedTo("HR", "MANAGER"),
-    validate(validateMonthYearQuery),
+    validate(monthYearQuerySchema),
     getMonthlyDashboardStats
 );
 

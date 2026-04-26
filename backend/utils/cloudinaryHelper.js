@@ -12,8 +12,8 @@ export const deleteFromCloudinary = async (secureUrl) => {
         const publicId = folderAndFile.split(".")[0];
 
         await cloudinary.uploader.destroy(publicId);
-        console.log(`🗑️ Orphan image deleted from Cloudinary: ${publicId}`);
+        console.log(`Orphan image deleted from Cloudinary: ${publicId}`);
     } catch (error) {
-        console.error("❌ Failed to delete image from Cloudinary", error);
+        console.error("Failed to delete image from Cloudinary", error);
     }
 };

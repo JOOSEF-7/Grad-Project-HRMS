@@ -105,7 +105,7 @@ export const getAllLeaves = asyncWraper(async (req, res, next) => {
     res.status(200).json({
         data,
         pagination: {
-            totalRcords,
+            totalRecords,
             totalPages,
             currentPage: pageNumber,
             limit: limitNumber,
@@ -580,18 +580,33 @@ export const updateLeaveStatus = asyncWraper(async (req, res, next) => {
 
 export const deleteLeave = asyncWraper(async (req, res, next) => {
     const { id } = req.params;
-    const deletedLeave = await Leave.findByIdAndDelete(id);
-    if (!deletedLeave) {
+    const employeeId = req.currentUser.userId;
+
+    const leave = await Leave.findOne({ _id: id, employeeId: employeeId });
+
+    if (!leave) {
         const error = appErrors.create(
-            400,
-            "Leave not found",
+            404,
+            "Leave not found or you don't have permission to delete it",
             httpResponseText.FAIL
         );
         return next(error);
     }
+
+    if (leave.status !== "Pending") {
+        const error = appErrors.create(
+            400,
+            `Cannot delete this leave request because it is already ${leave.status}`,
+            httpResponseText.FAIL
+        );
+        return next(error);
+    }
+    await Leave.findByIdAndDelete(id);
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { id: deletedLeave._id },
+        message: "Leave request has been deleted successfully",
+        data: { id: leave._id },
     });
 });
 

@@ -252,162 +252,172 @@ export const checkIn = asyncWraper(async (req, res, next) => {
     });
 });
 
-export const getMonthlyAttendanceStats = asyncWraper(async (req, res, next) => {
-    const { month, year } = req.query;
-    if (!month || !year) {
-        const error = appErrors.create(
-            400,
-            "month and year are required",
-            httpResponseText.FAIL
-        );
-        return next(error);
-    }
-    const startDate = dayjs(`${year}-${month}-01`)
-        .subtract(5, "month")
-        .format("YYYY-MM-DD");
+export const getSixMonthsAttendanceStats = asyncWraper(
+    async (req, res, next) => {
+        const { month, year } = req.query;
+        if (!month || !year) {
+            const error = appErrors.create(
+                400,
+                "month and year are required",
+                httpResponseText.FAIL
+            );
+            return next(error);
+        }
+        const startDate = dayjs(`${year}-${month}-01`)
+            .subtract(5, "month")
+            .format("YYYY-MM-DD");
 
-    console.log(startDate);
+        console.log(startDate);
 
-    const endDate = dayjs(`${year}-${month}-01`)
-        .endOf("month")
-        .format("YYYY-MM-DD");
-    console.log(endDate);
+        const endDate = dayjs(`${year}-${month}-01`)
+            .endOf("month")
+            .format("YYYY-MM-DD");
+        console.log(endDate);
 
-    const months = [
-        "",
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ];
+        const months = [
+            "",
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ];
 
-    const attendence = await Attendance.aggregate([
-        {
-            $match: {
-                date: {
-                    $gte: startDate,
-                    $lte: endDate,
+        const attendence = await Attendance.aggregate([
+            {
+                $match: {
+                    date: {
+                        $gte: startDate,
+                        $lte: endDate,
+                    },
                 },
             },
-        },
 
-        {
-            $facet: {
-                overallStats: [
-                    {
-                        $group: {
-                            _id: null,
-                            totalOnTime: {
-                                $sum: {
-                                    $cond: [
-                                        { $eq: ["$status", "On Time"] },
-                                        1,
-                                        0,
-                                    ],
+            {
+                $facet: {
+                    overallStats: [
+                        {
+                            $group: {
+                                _id: null,
+                                totalOnTime: {
+                                    $sum: {
+                                        $cond: [
+                                            { $eq: ["$status", "On Time"] },
+                                            1,
+                                            0,
+                                        ],
+                                    },
                                 },
-                            },
-                            totalLate: {
-                                $sum: {
-                                    $cond: [{ $eq: ["$status", "Late"] }, 1, 0],
+                                totalLate: {
+                                    $sum: {
+                                        $cond: [
+                                            { $eq: ["$status", "Late"] },
+                                            1,
+                                            0,
+                                        ],
+                                    },
                                 },
-                            },
-                            totalAbsent: {
-                                $sum: {
-                                    $cond: [
-                                        { $eq: ["$status", "Absent"] },
-                                        1,
-                                        0,
-                                    ],
+                                totalAbsent: {
+                                    $sum: {
+                                        $cond: [
+                                            { $eq: ["$status", "Absent"] },
+                                            1,
+                                            0,
+                                        ],
+                                    },
                                 },
+                                // avgDelay: { $avg: "$delayMinutes" },
                             },
-                            // avgDelay: { $avg: "$delayMinutes" },
                         },
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            totalOnTime: 1,
-                            totalLate: 1,
-                            totalAbsent: 1,
+                        {
+                            $project: {
+                                _id: 0,
+                                totalOnTime: 1,
+                                totalLate: 1,
+                                totalAbsent: 1,
+                            },
                         },
-                    },
-                ],
-                monthlyStats: [
-                    {
-                        $group: {
-                            _id: {
-                                year: {
-                                    $year: {
-                                        $dateFromString: {
-                                            dateString: "$date",
+                    ],
+                    monthlyStats: [
+                        {
+                            $group: {
+                                _id: {
+                                    year: {
+                                        $year: {
+                                            $dateFromString: {
+                                                dateString: "$date",
+                                            },
+                                        },
+                                    },
+                                    month: {
+                                        $month: {
+                                            $dateFromString: {
+                                                dateString: "$date",
+                                            },
                                         },
                                     },
                                 },
-                                month: {
-                                    $month: {
-                                        $dateFromString: {
-                                            dateString: "$date",
-                                        },
+
+                                totalOnTime: {
+                                    $sum: {
+                                        $cond: [
+                                            { $eq: ["$status", "On Time"] },
+                                            1,
+                                            0,
+                                        ],
+                                    },
+                                },
+                                totalLate: {
+                                    $sum: {
+                                        $cond: [
+                                            { $eq: ["$status", "Late"] },
+                                            1,
+                                            0,
+                                        ],
+                                    },
+                                },
+                                totalAbsent: {
+                                    $sum: {
+                                        $cond: [
+                                            { $eq: ["$status", "Absent"] },
+                                            1,
+                                            0,
+                                        ],
                                     },
                                 },
                             },
-
-                            totalOnTime: {
-                                $sum: {
-                                    $cond: [
-                                        { $eq: ["$status", "On Time"] },
-                                        1,
-                                        0,
-                                    ],
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                year: "$_id.year",
+                                month: "$_id.month",
+                                monthName: {
+                                    $arrayElemAt: [months, "$_id.month"],
                                 },
-                            },
-                            totalLate: {
-                                $sum: {
-                                    $cond: [{ $eq: ["$status", "Late"] }, 1, 0],
-                                },
-                            },
-                            totalAbsent: {
-                                $sum: {
-                                    $cond: [
-                                        { $eq: ["$status", "Absent"] },
-                                        1,
-                                        0,
-                                    ],
-                                },
+                                totalOnTime: 1,
+                                totalLate: 1,
+                                totalAbsent: 1,
                             },
                         },
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            year: "$_id.year",
-                            month: "$_id.month",
-                            monthName: {
-                                $arrayElemAt: [months, "$_id.month"],
-                            },
-                            totalOnTime: 1,
-                            totalLate: 1,
-                            totalAbsent: 1,
-                        },
-                    },
-                    { $sort: { year: 1, month: 1 } },
-                ],
+                        { $sort: { year: 1, month: 1 } },
+                    ],
+                },
             },
-        },
-    ]);
-    res.status(200).json({
-        status: httpResponseText.SUCCESS,
-        data: { monthlyAttendenceStats: attendence },
-    });
-});
+        ]);
+        res.status(200).json({
+            status: httpResponseText.SUCCESS,
+            data: { monthlyAttendenceStats: attendence },
+        });
+    }
+);
 
 export const getWeeklyAttendanceStats = asyncWraper(async (req, res, next) => {
     const { day, month, year } = req.query;
@@ -576,5 +586,84 @@ export const searchAttendance = asyncWraper(async (req, res, next) => {
                 limit: limitNumber,
             },
         },
+    });
+});
+
+export const getMonthlyAttendanceStats = asyncWraper(async (req, res, next) => {
+    const { year, month } = req.query;
+
+    const startDate = dayjs(`${year}-${month}-01`)
+        .startOf("month")
+        .format("YYYY-MM-DD");
+    const endDate = dayjs(`${year}-${month}-01`)
+        .endOf("month")
+        .format("YYYY-MM-DD");
+
+    const stats = await Attendance.aggregate([
+        {
+            $match: {
+                date: { $gte: startDate, $lte: endDate },
+            },
+        },
+        {
+            $group: {
+                _id: null,
+                totalAttendanceRecords: { $sum: 1 },
+                totalOnTimeCount: {
+                    $sum: { $cond: [{ $eq: ["$status", "On Time"] }, 1, 0] },
+                },
+                totalLateCount: {
+                    $sum: { $cond: [{ $eq: ["$status", "Late"] }, 1, 0] },
+                },
+                totalAbsentCount: {
+                    $sum: { $cond: [{ $eq: ["$status", "Absent"] }, 1, 0] },
+                },
+                totalDelayMinutes: { $sum: "$delayMinutes" },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                totalAttendanceRecords: 1,
+                totalOnTimeCount: 1,
+                totalLateCount: 1,
+                totalAbsentCount: 1,
+                totalDelayMinutes: 1,
+                attendanceRate: {
+                    $cond: [
+                        { $gt: ["$totalAttendanceRecords", 0] },
+                        {
+                            $round: [
+                                {
+                                    $multiply: [
+                                        {
+                                            $divide: [
+                                                {
+                                                    $add: [
+                                                        "$totalOnTimeCount",
+                                                        "$totalLateCount",
+                                                    ],
+                                                },
+                                                "$totalAttendanceRecords",
+                                            ],
+                                        },
+                                        100,
+                                    ],
+                                },
+                                2,
+                            ],
+                        },
+                        0,
+                    ],
+                },
+            },
+        },
+    ]);
+
+    const result = stats[0];
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: result,
     });
 });

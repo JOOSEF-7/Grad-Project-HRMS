@@ -25,13 +25,13 @@ export const validateUserSchema = z.object({
                 })
                 .email({ message: "must be a valid email" }),
 
-            password: z
-                .string({
-                    required_error: "password is required",
-                })
-                .min(8, {
-                    message: "password must be at least 8 characters long",
-                }),
+            // password: z
+            //     .string({
+            //         required_error: "password is required",
+            //     })
+            //     .min(8, {
+            //         message: "password must be at least 8 characters long",
+            //     }),
 
             role: z.enum(["HR", "EMPLOYEE", "MANAGER"]).default("EMPLOYEE"),
 

@@ -379,10 +379,18 @@ export const getEmployeesPayroll = asyncWraper(async (req, res, next) => {
         };
     });
 
-    const totalCount = await Payroll.countDocuments(searchQuery);
+    const totalRecords = await Payroll.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { formattedPayrolls, pagination: { totalCount } },
+        data: formattedPayrolls,
+        pagination: {
+            totalRecords,
+            totalPages,
+            currentPage: pageNumber,
+            limit: limitNumber,
+        },
     });
 });
 
@@ -451,7 +459,7 @@ export const getEmployeePayrollById = asyncWraper(async (req, res, next) => {
 });
 
 export const payingOnemonthtoEmployees = asyncWraper(async (req, res, next) => {
-    const { month, year } = req.query;
+    const { month, year } = req.body;
     if (!month || !year) {
         return next(
             appErrors.create(

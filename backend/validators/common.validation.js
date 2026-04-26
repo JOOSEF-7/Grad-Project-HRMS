@@ -49,8 +49,15 @@ export const validateIdParams = z.object({
     }),
 });
 
-export const validateMonthYearQuery = z.object({
+export const monthYearQuerySchema = z.object({
     query: z.object({
+        month: monthValidation,
+        year: yearValidation,
+    }),
+});
+
+export const monthYearBodySchema = z.object({
+    body: z.object({
         month: monthValidation,
         year: yearValidation,
     }),

@@ -9,6 +9,7 @@ import {
 import upload from "../Middleware/multerConfig.js";
 import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 import { updateSettingsSchema } from "../validators/settings.vaildation.js";
+import { processUploadedFile } from "../Middleware/processUploads.js";
 
 const router = Router();
 
@@ -19,8 +20,9 @@ router
     .patch(
         verifyToken,
         allowedTo("HR"),
-        upload.fields([{ name: "companyLogo", maxCount: 1 }]), 
-        setFilesToBody({ "companyLogo": "companyLogo" }),
+        upload.fields([{ name: "companyLogo", maxCount: 1 }]),
+        processUploadedFile,
+        setFilesToBody({ companyLogo: "companyLogo" }),
         validate(updateSettingsSchema),
         updateSettings
     );

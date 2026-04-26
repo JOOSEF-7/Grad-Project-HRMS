@@ -4,6 +4,7 @@ import {
     getAllAttandence,
     getAttendanceByEmployeeId,
     getMonthlyAttendanceStats,
+    getSixMonthsAttendanceStats,
     getWeeklyAttendanceStats,
     searchAttendance,
 } from "../controllers/attendance.controller.js";
@@ -14,7 +15,7 @@ import {
     monthlyStatsSchema,
     validateCheckInSchema,
     weeklyStatsSchema,
-} from "../validators/attendance.valiation.js";
+} from "../validators/attendance.validation.js";
 import { verifyToken } from "../guards/verifyToken.js";
 import { allowedTo } from "../guards/allowedTo.js";
 import { dailySearchSchema } from "../validators/common.validation.js";
@@ -42,12 +43,12 @@ router
 router.route("/check-in").post(validate(validateCheckInSchema), checkIn);
 
 router
-    .route("/stats/monthly")
+    .route("/stats/six-months")
     .get(
         verifyToken,
         allowedTo("HR"),
         validate(monthlyStatsSchema),
-        getMonthlyAttendanceStats
+        getSixMonthsAttendanceStats
     );
 router
     .route("/stats/weekly")
@@ -56,6 +57,15 @@ router
         allowedTo("HR"),
         validate(weeklyStatsSchema),
         getWeeklyAttendanceStats
+    );
+
+router
+    .route("/stats/monthly")
+    .get(
+        verifyToken,
+        allowedTo("HR"),
+        validate(monthlyStatsSchema),
+        getMonthlyAttendanceStats
     );
 
 export default router;
