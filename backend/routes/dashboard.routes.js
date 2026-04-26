@@ -18,9 +18,10 @@ import {
     getApplicantsByStatus,
     getEmployeeStatus,
     getProjectSummary,
-    getSixMonthsAttendanceStats,
+    getWeeklyAttendanceStats,
 } from "../controllers/dashboard.controller.js";
 import { monthlyStatsSchema } from "../validators/common.validation.js";
+import { weeklyStatsSchema } from "../validators/attendance.validation.js";
 
 router
     .route("/summary")
@@ -59,12 +60,12 @@ router
     );
 
 router
-    .route("/attendance/stats/six-months")
+    .route("/stats/weekly")
     .get(
         verifyToken,
         allowedTo("HR"),
-        validate(monthlyStatsSchema),
-        getSixMonthsAttendanceStats
+        validate(weeklyStatsSchema),
+        getWeeklyAttendanceStats
     );
 
 export default router;

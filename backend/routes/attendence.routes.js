@@ -4,7 +4,7 @@ import {
     getAllAttandence,
     getAttendanceByEmployeeId,
     getMonthlyAttendanceStats,
-    getWeeklyAttendanceStats,
+    getSixMonthsAttendanceStats,
     searchAttendance,
 } from "../controllers/attendance.controller.js";
 import { validate } from "../Middleware/validate.Middelware.js";
@@ -44,21 +44,21 @@ router
 router.route("/check-in").post(validate(validateCheckInSchema), checkIn);
 
 router
-    .route("/stats/weekly")
-    .get(
-        verifyToken,
-        allowedTo("HR"),
-        validate(weeklyStatsSchema),
-        getWeeklyAttendanceStats
-    );
-
-router
     .route("/stats/monthly")
     .get(
         verifyToken,
         allowedTo("HR"),
         validate(monthlyStatsSchema),
         getMonthlyAttendanceStats
+    );
+
+router
+    .route("/stats-six-months")
+    .get(
+        verifyToken,
+        allowedTo("HR"),
+        validate(monthlyStatsSchema),
+        getSixMonthsAttendanceStats
     );
 
 export default router;
