@@ -170,3 +170,12 @@ export const resetPasswordSchema = z.object({
             .min(8, { message: "pssword must be at least 6 characters " }),
     }),
 });
+
+export const searchEmployeesSchema = z.object({
+    query: z.object({
+        name: z
+            .string({ required_error: "Search name is required" })
+            .min(1, "Search name cannot be empty")
+            .trim(),
+    }),
+});

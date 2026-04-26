@@ -31,13 +31,6 @@ export const validateCheckInSchema = z.object({
     }),
 });
 
-export const monthlyStatsSchema = z.object({
-    query: z.object({
-        month: monthValidation,
-        year: yearValidation,
-    }),
-});
-
 export const weeklyStatsSchema = z.object({
     query: z.object({
         day: dayValidation,

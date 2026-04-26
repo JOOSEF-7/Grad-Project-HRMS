@@ -1,61 +1,83 @@
 import { z } from "zod";
 
 export const validateApplicantSchema = z.object({
-  body: z.object({
-    jobId: z
-      .string({
-        required_error: "Course ID is required",
-        invalid_type_error: "Course ID must be a string",
-      })
-      .regex(/^[0-9a-fA-F]{24}$/, { message: "Invalid Job ID" }),
-
-    firstName: z
-      .string({
-        required_error: "First name is required",
-        invalid_type_error: "First name must be a string",
-      })
-      .min(3, "the minimum number of chracter is 3"),
-
-    lastName: z
-      .string({
-        required_error: "Last name is required",
-        invalid_type_error: "Last name must be a string",
-      })
-      .min(3, "the minimum number of chracter is 3"),
-
-    gender: z.enum(["Male", "Female"], {
-      required_error: "Gender is required",
+    params: z.object({
+        jobId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid Job ID format"),
     }),
 
-    phone: z
-      .string({
-        required_error: "Phone number is required",
-        invalid_type_error: "Phone number must be a string",
-      })
-      .min(6, "the phone number must be at least 6 numbes long"),
+    body: z.object({
+        firstName: z
+            .string({
+                required_error: "First name is required",
+                invalid_type_error: "First name must be a string",
+            })
+            .min(3, "First name is too short"),
+        lastName: z
+            .string({
+                required_error: "Last name is required",
+                invalid_type_error: "Last name must be a string",
+            })
+            .min(3, "Last name is too short"),
 
-    email: z
-      .string({
-        required_error: "Email is required",
-        invalid_type_error: "Email must be a string",
-      })
-      .email({ message: "Invalid email" }),
+        gender: z.enum(["Male", "Female"], {
+            required_error: "Gender is required",
+        }),
 
-    resumeLink: z.string().url("Invalid URL").optional(),
+        phone: z.string().min(6, "Phone number must be at least 6 numbers"),
 
-    experience: z
-      .number({
-        required_error: "Experience is required",
-        invalid_type_error: "Experience must be a number",
-      })
-      .nonnegative("Experience must be a non-negative number"),
+        email: z.string().email("Invalid email format"),
 
-    status: z
-      .enum(["Applied", "Interviewing", "Hired", "Rejected"], {
-        required_error: "Status is required",
-      })
-      .default("Applied"),
+        resumeLink: z.string().url("Invalid URL").optional(),
 
-    avatar: z.string().default("/uploads/default-avatar.png"),
-  }),
+        status: z
+            .enum(["Applied", "Interviewing", "Hired", "Rejected"])
+            .default("Applied"),
+
+        avatar: z.string().optional(),
+
+        experience: z
+            .object({
+                company: z.string().optional(),
+                position: z.string().optional(),
+                jobType: z
+                    .enum(["Full-time", "Part-time", "Internship"])
+                    .optional(),
+                baseSalary: z.number().nonnegative().optional(),
+                startDate: z.coerce.date().optional(),
+                endDate: z.coerce.date().optional(),
+            })
+            .optional(),
+    }),
+});
+
+export const validateUpdateApplicantSchema = z.object({
+    body: validateApplicantSchema.shape.body.partial(),
+});
+
+const paginationSchema = {
+    page: z.string()
+        .optional()
+        .default("1")
+        .transform((val) => Math.max(1, parseInt(val, 10) || 1)),
+    
+    limit: z.string()
+        .optional()
+        .default("10")
+        .transform((val) => Math.max(1, parseInt(val, 10) || 10)),
+};
+
+export const validateHiringApplicantsListSchema = z.object({
+    query: z.object({
+        status: z.enum(["Applied", "Interviewing", "Hired", "Rejected", "All"]).optional(),
+        ...paginationSchema
+    })
+});
+
+export const searchApplicantsSchema = z.object({
+    query: z.object({
+        name: z
+            .string({ required_error: "Search name is required" })
+            .min(1, "Search name cannot be empty")
+            .trim(),
+    }),
 });

@@ -98,3 +98,10 @@ export const monthlySearchSchema = z.object({
             path: ["month"],
         }),
 });
+
+export const monthlyStatsSchema = z.object({
+    query: z.object({
+        month: monthValidation,
+        year: yearValidation,
+    }),
+});

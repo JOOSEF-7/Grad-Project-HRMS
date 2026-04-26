@@ -6,6 +6,8 @@ import {
     updateProject,
     deleteProject,
     createProject,
+    searchProjects,
+    getProjectStats,
 } from "../controllers/project.controller.js";
 import { verifyToken } from "../guards/verifyToken.js";
 import { allowedTo } from "../guards/allowedTo.js";
@@ -13,6 +15,7 @@ import { validate } from "../Middleware/validate.Middelware.js";
 import {
     validateProjectSchema,
     updateValidateProjectSchema,
+    searchProjectsSchema,
 } from "../validators/project.validation.js";
 import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 import upload from "../Middleware/multerConfig.js";
@@ -36,6 +39,10 @@ router
         validate(validateProjectSchema),
         createProject
     );
+    
+router.route("/stats").get(verifyToken, getProjectStats);
+    
+router.route("/search").get(verifyToken,allowedTo("HR"), validate(searchProjectsSchema), searchProjects);
 
 router
     .route("/:id")

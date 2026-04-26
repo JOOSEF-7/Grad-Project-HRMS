@@ -22,7 +22,10 @@ import attendanceRoutes from "./routes/attendence.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import payrollRouter from "./routes/payroll.routes.js";
 import scheduleAttendanceJob from "./jobs/attendanceJob.js";
+import jobRouter from "./routes/jobs.routes.js";
+import applicantRouter from "./routes/applicants.routes.js";
 import scheduleresetDefaultLeaves from "./jobs/resetDefaultLeaves.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,12 +55,14 @@ app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRouter);
 app.use("/api/tasks", taskRouter);
+app.use("/api/jobs", jobRouter);
+app.use("/api/applicants", applicantRouter);
 app.use("/api/leaves", leaveRouter);
 app.use("/api/requests", RequestRouter);
 app.use("/api/payroll", payrollRouter);
-
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/dashboard", dashboardRouter);
 
 app.all(/(.*)/, (req, res, next) => {
     const error = appErrors.create(404, "the route is not handeld", "Fail");

@@ -26,7 +26,7 @@ const JobApplicants = ({ applicants = [] }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-transparent/20 to-45% to-[#182731] p-8 rounded-[2.5rem] border border-gray-800/50 shadow-xl h-[480px] flex flex-col transition-all">
+    <div className="bg-gradient-to-br from-transparent/20 to-45% to-[#182731] p-[20px] rounded-[2.5rem] border border-gray-800/50 shadow-xl h-[480px] flex flex-col transition-all">
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-xl font-bold text-white">Job applicant</h3>
         <button

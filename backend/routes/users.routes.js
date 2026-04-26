@@ -7,9 +7,13 @@ import {
     getUserById,
     updateUser,
     deleteUser,
+    searchEmployees,
 } from "../controllers/user.controller.js";
 
-import { updateValidateUserSchema } from "../validators/users.validation.js";
+import {
+    searchEmployeesSchema,
+    updateValidateUserSchema,
+} from "../validators/users.validation.js";
 import { validateIdParams } from "../validators/common.validation.js";
 import upload from "../Middleware/multerConfig.js";
 import { processUploadedFile } from "../Middleware/processUploads.js";
@@ -18,6 +22,15 @@ import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 const router = Router();
 
 router.route("/").get(verifyToken, allowedTo("HR"), getAllUsers);
+
+router
+    .route("/search")
+    .get(
+        verifyToken,
+        allowedTo("HR"),
+        validate(searchEmployeesSchema),
+        searchEmployees
+    );
 
 router
     .route("/:id")

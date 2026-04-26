@@ -1,93 +1,54 @@
 import Project from "../models/project.model.js";
 import { httpResponseText } from "../utils/httpResponseText.js";
 import appErrors from "../utils/errors.js";
-import bcrypt from "bcrypt";
 import { flatten } from "flat";
 import { asyncWraper } from "../Middleware/asyncWraper.js";
 import Task from "../models/task.model.js";
 import mongoose from "mongoose";
 
 export const getAllProjects = asyncWraper(async (req, res, next) => {
-    const results = await Project.aggregate([
-        {
-            $facet: {
-                stats: [
-                    {
-                        $group: {
-                            _id: null,
-                            total: { $sum: 1 },
-                            ongoing: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$assignment.status",
-                                                "On-going",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            pending: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$assignment.status",
-                                                "Pending",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            completed: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$assignment.status",
-                                                "Completed",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                        },
-                    },
-                ],
-                projects: [
-                    {
-                        $lookup: {
-                            from: "tasks",
-                            localField: "_id",
-                            foreignField: "projectId",
-                            as: "subTasks",
-                        },
-                    },
-                ],
-            },
+    const { tag, status, priority, startDate, deadline } = req.query;
+
+    const pipeline = [];
+
+    if (tag) {
+        pipeline.push({ $match: { "general.tag": tag } });
+    }
+
+    if (status) {
+        pipeline.push({ $match: { "assignment.status": status } });
+    }
+
+    if (priority) {
+        pipeline.push({ $match: { "assignment.priority": priority } });
+    }
+
+    if (startDate) {
+        pipeline.push({
+            $match: { "general.startDate": { $gte: new Date(startDate) } },
+        });
+    }
+
+    if (deadline) {
+        pipeline.push({
+            $match: { "general.deadline": { $lte: new Date(deadline) } },
+        });
+    }
+
+    pipeline.push({
+        $lookup: {
+            from: "tasks",
+            localField: "_id",
+            foreignField: "projectId",
+            as: "subTasks",
         },
-    ]);
+    });
 
-    const stats = results[0].stats[0];
-    const projects = results[0].projects;
-
-    const headers = [
-        { title: "All Project", value: stats?.total || 0 },
-        { title: "On-going", value: stats?.ongoing || 0 },
-        { title: "Pending", value: stats?.pending || 0 },
-        { title: "Completed", value: stats?.completed || 0 },
-    ];
+    const projects = await Project.aggregate(pipeline);
 
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { headers, projects },
+        data: { projects },
     });
 });
 
@@ -198,4 +159,65 @@ export const deleteProject = asyncWraper(async (req, res, next) => {
         return next(error);
     }
     res.json({ status: httpResponseText.SUCCESS, data: null });
+});
+
+
+export const getProjectStats = asyncWraper(async (req, res, next) => {
+    const stats = await Project.aggregate([
+        {
+            $group: {
+                _id: null,
+                total: { $sum: 1 },
+                ongoing: {
+                    $sum: { $cond: [{ $eq: ["$assignment.status", "On-going"] }, 1, 0] }
+                },
+                pending: {
+                    $sum: { $cond: [{ $eq: ["$assignment.status", "Pending"] }, 1, 0] }
+                },
+                completed: {
+                    $sum: { $cond: [{ $eq: ["$assignment.status", "Completed"] }, 1, 0] }
+                }
+            }
+        }
+    ]);
+
+    const data = stats[0] || { total: 0, ongoing: 0, pending: 0, completed: 0 };
+
+    const headers = [
+        { title: "All Project", value: data.total },
+        { title: "On-going", value: data.ongoing },
+        { title: "Pending", value: data.pending },
+        { title: "Completed", value: data.completed },
+    ];
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: headers,
+    });
+});
+
+
+export const searchProjects = asyncWraper(async (req, res, next) => {
+    const { name } = req.query;
+
+    if (!name) {
+        return res.status(200).json({ status: httpResponseText.SUCCESS, data: { results: [] } });
+    }
+
+    const results = await Project.aggregate([
+        { $match: { "general.name": { $regex: name, $options: "i" } } },
+        {
+            $project: {
+                _id: 1,
+                "general.name": 1,
+                "general.avatar": 1,
+                "assignment.status": 1
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: { results }
+    });
 });

@@ -77,3 +77,12 @@ export const updateValidateProjectSchema = z.object({
         })
         .partial(),
 });
+
+export const searchProjectsSchema = z.object({
+    query: z.object({
+        name: z
+            .string({ required_error: "Project name is required" })
+            .min(1, "Project name cannot be empty")
+            .trim(),
+    }),
+});
