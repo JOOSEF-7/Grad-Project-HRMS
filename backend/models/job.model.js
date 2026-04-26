@@ -18,10 +18,6 @@ const jobSchema = new mongoose.Schema(
             default: "Open",
         },
         date: { type: Date, default: Date.now },
-        createdBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        },
     },
     modelConfig
 );

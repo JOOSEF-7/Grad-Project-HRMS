@@ -9,7 +9,7 @@ import userRoles from "../utils/userRole.js";
 import {
     validateApplicantSchema,
     validateUpdateApplicantSchema,
-    validateHiringStatisticsSchema,
+    validateHiringApplicantsListSchema,
     searchApplicantsSchema,
 } from "../validators/applicant.validation.js";
 
@@ -21,6 +21,7 @@ import {
     updateApplicant,
     deleteApplicant,
     getHiringStatistics,
+    getHiringApplicantsList,
     searchApplicants,
 } from "../controllers/applicant.controller.js";
 
@@ -28,11 +29,15 @@ router.route("/").get(verifyToken, allowedTo(userRoles.HR), getAllApplicants);
 
 router
     .route("/hiring-statistics")
+    .get(verifyToken, allowedTo(userRoles.HR), getHiringStatistics);
+
+router
+    .route("/hiring-applicants-list")
     .get(
         verifyToken,
         allowedTo(userRoles.HR),
-        validate(validateHiringStatisticsSchema),
-        getHiringStatistics
+        validate(validateHiringApplicantsListSchema),
+        getHiringApplicantsList
     );
 
 router

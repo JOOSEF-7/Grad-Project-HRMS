@@ -140,49 +140,49 @@ export const deleteApplicant = asyncWraper(async (req, res, next) => {
 
 
 export const getHiringStatistics = asyncWraper(async (req, res, next) => {
-    const filterStatus = req.query.status; 
-    
+    const stats = await Applicant.aggregate([
+        {
+            $group: {
+                _id: null,
+                totalApplicants: { $sum: 1 },
+                interviewing: { $sum: { $cond: [{ $eq: ["$status", "Interviewing"] }, 1, 0] } },
+                hired: { $sum: { $cond: [{ $eq: ["$status", "Hired"] }, 1, 0] } },
+                rejected: { $sum: { $cond: [{ $eq: ["$status", "Rejected"] }, 1, 0] } },
+                applied: { $sum: { $cond: [{ $eq: ["$status", "Applied"] }, 1, 0] } }
+            }
+        },
+        {
+            $project: { _id: 0 }
+        }
+    ]);
+
+    const result = stats[0] || { totalApplicants: 0, interviewing: 0, hired: 0, rejected: 0, applied: 0 };
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: { stats: result }
+    });
+});
+
+export const getHiringApplicantsList = asyncWraper(async (req, res, next) => {
+    const filterStatus = req.query.status;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const matchCondition = filterStatus && filterStatus !== "All" 
         ? { status: filterStatus } 
         : {};
 
-    const dashboardData = await Applicant.aggregate([
+    const result = await Applicant.aggregate([
+        { $match: matchCondition },
         {
             $facet: {
-                "counters": [
-                    {
-                        $group: {
-                            _id: null,
-                            totalApplicants: { $sum: 1 },
-                            interviewing: {
-                                $sum: { $cond: [{ $eq: ["$status", "Interviewing"] }, 1, 0] }
-                            },
-                            hired: {
-                                $sum: { $cond: [{ $eq: ["$status", "Hired"] }, 1, 0] }
-                            },
-                            rejected: {
-                                $sum: { $cond: [{ $eq: ["$status", "Rejected"] }, 1, 0] }
-                            },
-                            applied: {
-                                $sum: { $cond: [{ $eq: ["$status", "Applied"] }, 1, 0] }
-                            }
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            totalApplicants: 1,
-                            interviewing: 1,
-                            hired: 1,
-                            rejected: 1,
-                            applied: 1
-                        }
-                    }
-                ],
-
-                "applicantsList": [
-                    { $match: matchCondition },
+                metadata: [{ $count: "totalRecords" }],
+                data: [
                     { $sort: { createdAt: -1 } },
+                    { $skip: skip },
+                    { $limit: limit },
                     {
                         $project: {
                             firstName: 1,
@@ -198,21 +198,19 @@ export const getHiringStatistics = asyncWraper(async (req, res, next) => {
         }
     ]);
 
-    const stats = dashboardData[0].counters[0] || { 
-        totalApplicants: 0, 
-        interviewing: 0, 
-        hired: 0, 
-        rejected: 0, 
-        applied: 0 
-    };
-    
-    const list = dashboardData[0].applicantsList || [];
+    const totalRecords = result[0]?.metadata[0]?.totalRecords || 0;
+    const applicantsList = result[0]?.data || [];
 
     res.status(200).json({
         status: httpResponseText.SUCCESS,
         data: {
-            stats,
-            applicantsList: list
+            applicantsList,
+            pagination: {
+                totalRecords,
+                currentPage: page,
+                totalPages: Math.ceil(totalRecords / (limit || 1)) || 0,
+                limit
+            }
         }
     });
 });

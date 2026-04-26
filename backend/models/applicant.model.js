@@ -37,10 +37,6 @@ const applicantSchema = new mongoose.Schema(
             type: String,
             default: "/uploads/default-avatar.png",
         },
-        createdAt: {
-            type: Date,
-            default: Date.now
-        },
         experience: {
             company: { type: String },
             position: { type: String },

@@ -39,8 +39,10 @@ router
         validate(validateProjectSchema),
         createProject
     );
-
+    
 router.route("/stats").get(verifyToken, getProjectStats);
+    
+router.route("/search").get(verifyToken,allowedTo("HR"), validate(searchProjectsSchema), searchProjects);
 
 router
     .route("/:id")
@@ -53,5 +55,4 @@ router
     )
     .delete(verifyToken, allowedTo("HR", "MANAGER"), deleteProject);
 
-router.route("/search").get(verifyToken,allowedTo("HR"), validate(searchProjectsSchema), searchProjects);
 export default router;

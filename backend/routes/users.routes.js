@@ -20,6 +20,8 @@ const router = Router();
 
 router.route("/").get(verifyToken, allowedTo("HR"), getAllUsers);
 
+router.route("/search").get(verifyToken, allowedTo("HR"), validate(searchEmployeesSchema), searchEmployees);
+
 router
     .route("/:id")
     .get(validate(validateIdSchema), verifyToken, getUserById)
@@ -34,5 +36,4 @@ router
     )
     .delete(verifyToken, allowedTo("HR"), deleteUser);
 
-router.route("/search").get(verifyToken, allowedTo("HR"), validate(searchEmployeesSchema), searchEmployees);
 export default router;

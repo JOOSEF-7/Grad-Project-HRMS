@@ -54,12 +54,23 @@ export const validateUpdateApplicantSchema = z.object({
     body: validateApplicantSchema.shape.body.partial(),
 });
 
-export const validateHiringStatisticsSchema = z.object({
+const paginationSchema = {
+    page: z.string()
+        .optional()
+        .default("1")
+        .transform((val) => Math.max(1, parseInt(val, 10) || 1)),
+    
+    limit: z.string()
+        .optional()
+        .default("10")
+        .transform((val) => Math.max(1, parseInt(val, 10) || 10)),
+};
+
+export const validateHiringApplicantsListSchema = z.object({
     query: z.object({
-        status: z
-            .enum(["Applied", "Interviewing", "Hired", "Rejected", "All"])
-            .optional(),
-    }),
+        status: z.enum(["Applied", "Interviewing", "Hired", "Rejected", "All"]).optional(),
+        ...paginationSchema
+    })
 });
 
 export const searchApplicantsSchema = z.object({
