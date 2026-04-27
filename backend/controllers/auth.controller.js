@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendEmail } from "../utils/sendEmail.js";
 import { deleteFromCloudinary } from "../utils/cloudinaryHelper.js";
+import { getCookieOptions } from "../utils/cookiesOptions.js";
 
 export const register = asyncWraper(async (req, res, next) => {
     const { general, experience, employee } = req.body;
