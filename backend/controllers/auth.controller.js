@@ -124,19 +124,9 @@ export const login = asyncWraper(async (req, res, next) => {
         role: oldUser.general.role,
     });
 
-    res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 60 * 60 * 1000,
-    });
+    res.cookie("accessToken", accessToken, getCookieOptions(2));
 
-    res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", refreshToken, getCookieOptions(7));
 
     const userResponse = oldUser.toObject();
     delete userResponse.general.password;
@@ -170,14 +160,14 @@ export const refreshUserToken = asyncWraper(async (req, res, next) => {
             role: decoded.role,
         };
         const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-            expiresIn: "7d",
+            expiresIn: "2d",
         });
 
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 7 * 60 * 60 * 1000,
+            maxAge: 2 * 60 * 60 * 1000,
         });
         res.status(200).json({
             status: httpResponseText.SUCCESS,
@@ -191,14 +181,14 @@ export const refreshUserToken = asyncWraper(async (req, res, next) => {
 });
 
 export const logout = asyncWraper(async (req, res, next) => {
-    const cookieOptions = {
+    const options = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
     };
 
-    res.clearCookie("accessToken", cookieOptions);
-    res.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("accessToken", options);
+    res.clearCookie("refreshToken", options);
 
     res.status(200).json({
         status: httpResponseText.SUCCESS,
