@@ -336,7 +336,9 @@ export const resetPassword = asyncWraper(async (req, res, next) => {
 });
 
 export const getMe = asyncWraper(async (req, res, next) => {
-    const user = await User.findById(req.currentUser.userId);
+    const user = await User.findById(req.currentUser.userId).select(
+        "-general.password -general.passwordResetCode -general.passwordResetExpires -general.passwordResetVerified -__v"
+    );
 
     if (!user) {
         return next(
