@@ -9,10 +9,11 @@ export const sendEmail = async (options) => {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD,
         },
+        family: 4,
     });
 
     const mailOptions = {
-        from: "HRMS Support <" + process.env.EMAIL_USER + ">",
+        from: `HRMS Support <${process.env.EMAIL_USER}>`,
         to: options.email,
         subject: options.subject,
         text: options.message,
