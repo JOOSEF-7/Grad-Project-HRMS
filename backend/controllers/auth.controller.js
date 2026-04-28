@@ -334,3 +334,18 @@ export const resetPassword = asyncWraper(async (req, res, next) => {
         message: "password reset successfully",
     });
 });
+
+export const getMe = asyncWraper(async (req, res, next) => {
+    const user = await User.findById(req.currentUser.userId);
+
+    if (!user) {
+        return next(
+            appErrors.create(404, "User not found", httpResponseText.FAIL)
+        );
+    }
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: { user },
+    });
+});
