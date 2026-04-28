@@ -246,7 +246,7 @@ export const forgetPassword = asyncWraper(async (req, res, next) => {
         return next(
             appErrors.create(
                 500,
-                "Failed to send OTP email. Please try again later.",
+                `Nodemailer Error: ${err.message}`,
                 httpResponseText.FAIL
             )
         );
