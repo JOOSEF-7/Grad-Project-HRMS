@@ -22,3 +22,19 @@ export const sendEmail = async (options) => {
 
     await transporter.sendMail(mailOptions);
 };
+import sgMail from "@sendgrid/mail";
+
+export const sendEmail = async (options) => {
+    // 1. بنديله المفتاح اللي جبناه من ريلواي
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+    // 2. بنجهز الرسالة
+    const msg = {
+        to: options.email,
+        from: process.env.EMAIL_USER,
+        subject: options.subject,
+        text: options.message,
+    };
+
+    await sgMail.send(msg);
+};
