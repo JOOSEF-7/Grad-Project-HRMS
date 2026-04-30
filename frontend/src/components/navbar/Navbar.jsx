@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { toggleSidebar } from "../../store/slices/navbar/sideMenuSlice";
+import { toggleSidebar } from "../../store/HrSlices/navbar/sideMenuSlice";
 
 // components
 import NavSearchTrigger from "../NavbarComponents/NavSearchTrigger";

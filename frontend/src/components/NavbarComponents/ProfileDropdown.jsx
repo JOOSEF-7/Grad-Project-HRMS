@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { logout } from "../../store/slices/auth/loginSlice";
-import { fetchMyHRProfile } from "../../store/slices/navbar/hrProfileSlice";
+// import { logout } from "../../store/HrSlices/auth/loginSlice";
+import { fetchMyHRProfile } from "../../store/HrSlices/navbar/hrProfileSlice";
 
 import defaultAvatar from "../../assets/avatars/avatar-default-symbolic-svgrepo-com.svg";
 
@@ -24,7 +24,7 @@ const ProfileDropdown = ({ isOpen, setIsOpen, profileRef }) => {
   const displayUser = hrProfile || authUser;
 
   const handleLogout = () => {
-    dispatch(logout());
+    // dispatch(logout());
     navigate("/login");
     setIsOpen(false);
   };
@@ -34,10 +34,10 @@ const ProfileDropdown = ({ isOpen, setIsOpen, profileRef }) => {
   //   setIsOpen(false);
   // };
   const goToProfile = () => {
-  // بنقول له روح لصفحة السيتنج وخد معاك معلومة إننا عاوزين نفتح تاب الأكونت
-  navigate("/settings", { state: { activeTab: "account" } }); 
-  setIsOpen(false);
-};
+    // بنقول له روح لصفحة السيتنج وخد معاك معلومة إننا عاوزين نفتح تاب الأكونت
+    navigate("/settings", { state: { activeTab: "account" } });
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative ml-2" ref={profileRef}>
