@@ -32,14 +32,7 @@ function HRApproval() {
           <h1 className="text-white text-xl font-semibold tracking-tight">
             Leave application
           </h1>
-<<<<<<< HEAD
           <button className="w-10 h-10 rounded-xl bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center transition-all duration-200 hover:scale-105" onClick={() => navigate("/leave")}>
-=======
-          <button
-            className="w-10 h-10 rounded-xl bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center transition-all duration-200 hover:scale-105"
-            onClick={() => navigate("/leave")}
-          >
->>>>>>> Alaa
             <svg
               className="w-4 h-4 text-white"
               fill="none"
