@@ -1,5 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllLeaves, updateLeaveStatus } from "../../../store/slices/leaveSlice"
+import {
+  fetchAllLeaves,
+  updateLeaveStatus,
+} from "../../../store/HrSlices/leaveSlice";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -10,27 +13,33 @@ function HRApproval() {
   const dispatch = useDispatch();
   const { list, loading } = useSelector((state) => state.leaves);
   useEffect(() => {
-  dispatch(fetchAllLeaves());
+    dispatch(fetchAllLeaves());
   }, [dispatch]);
 
- const handleAccept = (id) => {
-  dispatch(updateLeaveStatus({ id, status: "Approved" }));
-};
+  const handleAccept = (id) => {
+    dispatch(updateLeaveStatus({ id, status: "Approved" }));
+  };
 
   const handleDecline = (id) => {
-  dispatch(updateLeaveStatus({ id, status: "Rejected" }));
-};
-
+    dispatch(updateLeaveStatus({ id, status: "Rejected" }));
+  };
 
   return (
-     <div className="w-full ">
+    <div className="w-full ">
       <BaseCard className=" flex flex-col h-full shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-white text-xl font-semibold tracking-tight">
             Leave application
           </h1>
+<<<<<<< HEAD
           <button className="w-10 h-10 rounded-xl bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center transition-all duration-200 hover:scale-105" onClick={() => navigate("/leave")}>
+=======
+          <button
+            className="w-10 h-10 rounded-xl bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center transition-all duration-200 hover:scale-105"
+            onClick={() => navigate("/leave")}
+          >
+>>>>>>> Alaa
             <svg
               className="w-4 h-4 text-white"
               fill="none"
@@ -76,7 +85,7 @@ function HRApproval() {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
-                {request.status === "Approved"  ? (
+                {request.status === "Approved" ? (
                   <span className="px-4 py-2 text-xs font-medium text-emerald-400 bg-emerald-500/20 rounded-full">
                     Accepted
                   </span>
@@ -106,8 +115,7 @@ function HRApproval() {
         </div>
       </BaseCard>
     </div>
-    
-  )
+  );
 }
 
-export default HRApproval
+export default HRApproval;
