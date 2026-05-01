@@ -10,7 +10,7 @@ export default function StatCard({ title, value, color = "text-slate-100", accen
   return (
     <div
       className={`
-        bg-slate-800/50
+        bg-gradient-to-br from-transparent/20 to-45% to-[#182731]
         border ${accent}
         rounded-2xl
         p-4

@@ -21,7 +21,7 @@ export default function SearchInput({ searchTerm, setSearchTerm }) {
     <div
       className="
         flex items-center
-        bg-slate-800/50
+        bg-gradient-to-br from-transparent/20 to-45% to-[#182731]
         border border-slate-700/50
         rounded-xl
         px-3 py-2

@@ -4,9 +4,9 @@ import { fetchMonthlyAttendance } from "../../store/HrSlices/attendance/attendan
 import { fetchAttendance } from "../../store/HrSlices/attendance/attendanceSlice";
 
 //  components
-import EmployeesTable from "../../components/employees/EmployeesTable/EmployeesTable";
-import EmployeeHeader from "../../components/employees/EmployeeHeader/EmployeeHeader";
-import HRApproval from "../../components/employees/HRApproval/HRApproval";
+import EmployeesTable from "../../HrComponents/employees/EmployeesTable/EmployeesTable";
+import EmployeeHeader from "../../HrComponents/employees/EmployeeHeader/EmployeeHeader";
+import HRApproval from "../../HrComponents/employees/HRApproval/HRApproval";
 import AttendanceReport from "../../HrComponents/DashboardComponents/AttendanceReport";
 
 const Employees = () => {
