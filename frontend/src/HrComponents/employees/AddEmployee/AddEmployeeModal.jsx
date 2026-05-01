@@ -176,7 +176,7 @@ const handleSubmit = async () => {
 
     // الصورة لو موجودة
     if (formData.general.image instanceof File) {
-      fd.append("general[avatar]", formData.general.image);
+      fd.append("avatar", formData.general.image);
     }
 
     // 2️⃣ Experience fields
