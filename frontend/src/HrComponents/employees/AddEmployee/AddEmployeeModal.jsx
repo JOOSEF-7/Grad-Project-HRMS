@@ -95,71 +95,6 @@ const updateEmployee = (field, value) => {
   }));
 };
 
-// const handleSubmit = async () => {
-//   try {
-//     // 💡 تجميع البيانات بالظبط زي ما الباك إند مستنيها
-//     const payload = {
-//       // بيانات الخطوة الأولى (General) - حسب الـ API لو مستنيها في الـ root
-//       firstName: formData.general.firstName,
-//       lastName: formData.general.lastName,
-//       email: formData.general.email,
-//       phone: formData.general.phone,
-//       gender: formData.general.gender,
-//       address: formData.general.address,
-//       rfidTag: formData.general.rfidTag,
-//       role: formData.general.role,
-//       avatar: formData.general.image, // لو رابط نصي
-
-//       // بيانات الخطوة الثانية (Experience)
-//       experience: {
-//         company: formData.experience.company,
-//         position: formData.experience.position,
-//         jobType: formData.experience.jobType,
-//         baseSalary: Number(formData.experience.salary), // تأكدي من تحويل الأرقام
-//         startDate: formData.experience.startDate,
-//         endDate: formData.experience.endDate,
-//       },
-
-//       // بيانات الخطوة الثالثة (Employee)
-//       employee: {
-//         jobTitle: formData.employee.jobTitle,
-//         department: formData.employee.department,
-//         workLocation: formData.employee.workLocation,
-//         jobType: formData.employee.jobType,
-//         joiningDate: formData.employee.joiningDate,
-//         baseSalary: Number(formData.employee.baseSalary),
-//         workingHours: Number(formData.employee.workingHours),
-//         status: formData.employee.status,
-//         leaveBalance: {
-//           annual: Number(formData.employee.leaveBalance.annual),
-//           sick: Number(formData.employee.leaveBalance.sick),
-//           casual: Number(formData.employee.leaveBalance.casual),
-//         }
-//       }
-//     };
-
-//     console.log("Sending Payload:", payload); // شوفي الشكل في الكونسول قبل ما يتبعت
-
-//     const response = await api.post("/employees", payload);
-
-//     if (response.status === 201 || response.status === 200) {
-//       onSuccess?.();
-//       onClose();
-//     }
-//   } catch (error) {
-//     // 💡 أهم جزء: عشان نعرف إيه بالظبط اللي غلط في الـ 400
-//     console.error("Backend Validation Error:", error.response?.data);
-//     alert(`Error: ${error.response?.data?.message || "Check required fields"}`);
-//   }
-
-//   // اقفل المودال
-//   onClose();
-
-//   // بلغ الـ parent إن العملية نجحت
-//   if (onSuccess) {
-//     onSuccess();
-//   }
-// };
 const handleSubmit = async () => {
   try {
     const fd = new FormData();
@@ -176,7 +111,10 @@ const handleSubmit = async () => {
 
     // الصورة لو موجودة
     if (formData.general.image instanceof File) {
-      fd.append("avatar", formData.general.image);
+    console.log("Image type:", typeof formData.general.image);
+    console.log("Is File?:", formData.general.image instanceof File);
+    console.log("Image value:", formData.general.image);
+    fd.append("general[avatar]", formData.general.image);
     }
 
     // 2️⃣ Experience fields
@@ -200,8 +138,11 @@ const handleSubmit = async () => {
     fd.append("employee[leaveBalance][sick]", Number(formData.employee.leaveBalance.sick));
     fd.append("employee[leaveBalance][casual]", Number(formData.employee.leaveBalance.casual));
 
-    // 4️⃣ ابعتي للـ endpoint الصح
-    const response = await api.post("/auth/register", fd);
+    const response = await api.post("/auth/register", fd, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     if (response.data?.status === "success") {
       onSuccess?.();
