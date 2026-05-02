@@ -24,7 +24,7 @@ export const fetchMonthlyAttendance = createAsyncThunk(
   async ({ month, year }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `/attendance/monthly?month=${month}&year=${year}`
+        `attendance/stats-six-months?month=${month}&year=${year}`
       );
       return response.data;
     } catch (error) {
@@ -79,10 +79,28 @@ const attendanceSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchMonthlyAttendance.fulfilled, (state, action) => {
-        state.loading = false;
-        state.chartData = action.payload.chartData;
-        state.totals = action.payload.totals;
-      })
+      state.loading = false;
+  
+  
+      const statsRoot = action.payload.data?.monthlyAttendenceStats?.[0];
+
+      if (statsRoot) {
+    
+      state.chartData = statsRoot.monthlyStats || [];
+
+  
+      const overall = statsRoot.overallStats?.[0];
+      state.totals = {
+      onTime: overall?.totalOnTime || 0,
+      late: overall?.totalLate || 0,
+      absent: overall?.totalAbsent || 0,
+    };
+    } else {
+    
+    state.chartData = [];
+    state.totals = { onTime: 0, late: 0, absent: 0 };
+  }
+})
       .addCase(fetchMonthlyAttendance.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
