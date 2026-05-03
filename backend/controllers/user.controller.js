@@ -148,7 +148,9 @@ export const searchEmployees = asyncWraper(async (req, res, next) => {
     const { name } = req.query;
 
     if (!name) {
-        return res.status(200).json({ status: httpResponseText.SUCCESS, data: { results: [] } });
+        return res
+            .status(200)
+            .json({ status: httpResponseText.SUCCESS, data: { results: [] } });
     }
 
     const results = await User.aggregate([
@@ -165,17 +167,23 @@ export const searchEmployees = asyncWraper(async (req, res, next) => {
                 $or: [
                     { "general.firstName": { $regex: name, $options: "i" } },
                     { "general.lastName": { $regex: name, $options: "i" } },
-                    { 
+                    {
                         $expr: {
                             $regexMatch: {
-                                input: { $concat: ["$general.firstName", " ", "$general.lastName"] },
+                                input: {
+                                    $concat: [
+                                        "$general.firstName",
+                                        " ",
+                                        "$general.lastName",
+                                    ],
+                                },
                                 regex: name,
-                                options: "i"
-                            }
-                        }
-                    }
-                ]
-            }
+                                options: "i",
+                            },
+                        },
+                    },
+                ],
+            },
         },
         {
             $project: {
@@ -183,13 +191,13 @@ export const searchEmployees = asyncWraper(async (req, res, next) => {
                 "general.firstName": 1,
                 "general.lastName": 1,
                 "general.avatar": 1,
-                "employee.jobTitle": 1
-            }
-        }
+                "employee.jobTitle": 1,
+            },
+        },
     ]);
 
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { results }
+        data: { results },
     });
 });

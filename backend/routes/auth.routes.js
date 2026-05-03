@@ -8,6 +8,7 @@ import { loginLimiter } from "../Middleware/rateLimiting.js";
 import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 import {
     forgetPassword,
+    getMe,
     login,
     logout,
     refreshUserToken,
@@ -28,13 +29,17 @@ const router = Router();
 
 router
     .route("/register")
-    .post(verifyToken,allowedTo("HR","MANAGER"),
+    .post(
+        verifyToken,
+        allowedTo("HR", "MANAGER"),
         upload.fields([{ name: "general[avatar]", maxCount: 1 }]),
         processUploadedFile,
         setFilesToBody({ "general[avatar]": "general.avatar" }),
         validate(validateUserSchema),
         register
     );
+
+router.route("/me").get(verifyToken, getMe);
 
 router.route("/login").post(validate(validateLogInSchema), loginLimiter, login);
 

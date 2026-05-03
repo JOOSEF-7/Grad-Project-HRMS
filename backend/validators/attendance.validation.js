@@ -43,7 +43,7 @@ export const AttendanceByEmployeeIdQuery = z.object({
     query: z.object({
         limit: limitValidation,
         page: pageValidation,
-        month: monthValidation,
-        year: yearValidation,
+        month: monthValidation.optional(),
+        year: yearValidation.optional(),
     }),
 });
