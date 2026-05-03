@@ -3,9 +3,10 @@ import {
     generatePayrollDraft,
     ApprovePayroll,
     getEmployeesPayroll,
-    getEmployeePayrollById,
+    getPayrollDetails,
     payingOnemonthtoEmployees,
     payingOnemonthtoEmployee,
+    getEmployeePayrollHistory,
     payAllPending,
     getMonthlyDashboardStats,
     getYearlyPayrollChart,
@@ -34,7 +35,13 @@ router.post(
     generatePayrollDraft
 );
 
-router.get("/search", validate(monthlySearchSchema), searchPayroll);
+router.get(
+    "/search",
+    verifyToken,
+    allowedTo("HR", "MANAGER"),
+    validate(monthlySearchSchema),
+    searchPayroll
+);
 
 router.post(
     "/approve",
@@ -66,7 +73,12 @@ router.patch(
     payingOnemonthtoEmployee
 );
 
-router.get("/", verifyToken, allowedTo("HR", "MANAGER"), getEmployeesPayroll);
+router.get(
+    "/employees",
+    verifyToken,
+    allowedTo("HR", "MANAGER"),
+    getEmployeesPayroll
+);
 
 router.get(
     "/dashboard/monthly",
@@ -88,7 +100,13 @@ router.get(
     "/:id",
     verifyToken,
     allowedTo("HR", "MANAGER", "EMPLOYEE"),
-    getEmployeePayrollById
+    getPayrollDetails
+);
+router.get(
+    "/employee/:id",
+    verifyToken,
+    allowedTo("HR", "MANAGER", "EMPLOYEE"),
+    getEmployeePayrollHistory
 );
 
 export default router;

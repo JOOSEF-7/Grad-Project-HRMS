@@ -99,6 +99,7 @@ export const getAllAttandence = asyncWraper(async (req, res, next) => {
 export const getAttendanceByEmployeeId = asyncWraper(async (req, res, next) => {
     const { month, year, limit, page } = req.query;
     const id = req.params.id;
+
     if (req.currentUser.role !== "HR" && req.currentUser.userId !== id) {
         const error = appErrors.create(
             403,
@@ -106,6 +107,7 @@ export const getAttendanceByEmployeeId = asyncWraper(async (req, res, next) => {
         );
         return next(error);
     }
+
     const limitNumber = parseInt(limit) || 10;
     const pageNumber = parseInt(page) || 1;
     const skip = (pageNumber - 1) * limitNumber;
@@ -128,41 +130,59 @@ export const getAttendanceByEmployeeId = asyncWraper(async (req, res, next) => {
             $sort: { date: -1 },
         },
         {
-            $skip: skip,
-        },
-        {
-            $limit: limitNumber,
-        },
-        {
-            $lookup: {
-                from: "users",
-                localField: "employeeId",
-                foreignField: "_id",
-                as: "employeeDetails",
-            },
-        },
-        {
-            $unwind: "$employeeDetails",
-        },
-        {
-            $project: {
-                _id: 1,
-                employeeId: 1,
-                date: 1,
-                checkIn: 1,
-                status: 1,
-                firstName: "$employeeDetails.general.firstName",
-                lastName: "$employeeDetails.general.lastName",
-                email: "$employeeDetails.general.email",
-                department: "$employeeDetails.employee.department",
-                jobType: "$employeeDetails.employee.jobType",
+            $facet: {
+                metadata: [{ $count: "totalRecords" }],
+
+                data: [
+                    { $skip: skip },
+                    { $limit: limitNumber },
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "employeeId",
+                            foreignField: "_id",
+                            as: "employeeDetails",
+                        },
+                    },
+                    {
+                        $unwind: "$employeeDetails",
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            employeeId: 1,
+                            date: 1,
+                            checkIn: 1,
+                            status: 1,
+                            firstName: "$employeeDetails.general.firstName",
+                            lastName: "$employeeDetails.general.lastName",
+                            email: "$employeeDetails.general.email",
+                            department: "$employeeDetails.employee.department",
+                            jobType: "$employeeDetails.employee.jobType",
+                        },
+                    },
+                ],
             },
         },
     ];
-    const attendance = await Attendance.aggregate(pipeline);
+
+    const result = await Attendance.aggregate(pipeline);
+
+    const attendanceData = result[0].data;
+
+    const totalRecords =
+        result[0].metadata.length > 0 ? result[0].metadata[0].totalRecords : 0;
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { attendance },
+        data: { attendance: attendanceData },
+        pagination: {
+            totalRecords,
+            totalPages,
+            currentPage: pageNumber,
+            limit: limitNumber,
+        },
     });
 });
 

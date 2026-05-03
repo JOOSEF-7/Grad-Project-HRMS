@@ -394,38 +394,35 @@ export const getEmployeesPayroll = asyncWraper(async (req, res, next) => {
     });
 });
 
-export const getEmployeePayrollById = asyncWraper(async (req, res, next) => {
-    const { month, year, status } = req.query;
-    const id = req.params.id;
-    if (req.currentUser.role !== "HR" && req.currentUser.userId !== id) {
-        const error = appErrors.create(
-            403,
-            "Forbidden, You are not allowed to view other users' payroll"
-        );
-        return next(error);
-    }
-    const searchQuery = {};
-    if (month && year) {
-        searchQuery.month = month;
-        searchQuery.year = year;
-    }
-    if (status) {
-        searchQuery.status = status;
-    }
-    searchQuery.employeeId = id;
+export const getPayrollDetails = asyncWraper(async (req, res, next) => {
+    const payrollId = req.params.id;
 
-    const payroll = await Payroll.findOne(searchQuery).populate(
+    const payroll = await Payroll.findById(payrollId).populate(
         "employeeId",
         "general.firstName general.lastName general.email general.phone general.gender general.role general.avatar employee.department employee.jobTitle employee.jobType"
     );
+
     if (!payroll) {
         return next(
             appErrors.create(
                 404,
-                "Payroll not found for this employee in the specified period",
+                "Payroll record not found",
                 httpResponseText.FAIL
             )
         );
+    }
+
+    const employeeIdString = payroll.employeeId._id.toString();
+
+    if (
+        req.currentUser.role !== "HR" &&
+        req.currentUser.userId !== employeeIdString
+    ) {
+        const error = appErrors.create(
+            403,
+            "Forbidden, You are not allowed to view other users' payroll details"
+        );
+        return next(error);
     }
 
     const formattedPayroll = {
@@ -452,9 +449,93 @@ export const getEmployeePayrollById = asyncWraper(async (req, res, next) => {
             jobType: payroll.employeeId?.employee?.jobType || "",
         },
     };
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
         data: { formattedPayroll },
+    });
+});
+
+export const getEmployeePayrollHistory = asyncWraper(async (req, res, next) => {
+    const { month, year, status, limit, page } = req.query;
+    const id = req.params.id;
+    const limitNumber = Number(limit) || 10;
+    const pageNumber = Number(page) || 1;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    if (req.currentUser.role !== "HR" && req.currentUser.userId !== id) {
+        const error = appErrors.create(
+            403,
+            "Forbidden, You are not allowed to view other users' payroll"
+        );
+        return next(error);
+    }
+
+    const searchQuery = {};
+    if (month && year) {
+        searchQuery.month = month;
+        searchQuery.year = year;
+    }
+    if (status) {
+        searchQuery.status = status;
+    }
+    searchQuery.employeeId = id;
+
+    const payrolls = await Payroll.find(searchQuery)
+        .skip(skip)
+        .limit(limitNumber)
+        .populate(
+            "employeeId",
+            "general.firstName general.lastName general.email general.phone general.gender general.role general.avatar employee.department employee.jobTitle employee.jobType"
+        );
+
+    if (!payrolls || payrolls.length === 0) {
+        return next(
+            appErrors.create(
+                404,
+                "Payroll not found for this employee in the specified period",
+                httpResponseText.FAIL
+            )
+        );
+    }
+
+    const formattedPayrolls = payrolls.map((payroll) => ({
+        _id: payroll._id,
+        month: payroll.month,
+        year: payroll.year,
+        baseSalary: payroll.baseSalary,
+        netSalary: payroll.netSalary,
+        deductions: payroll.deductions,
+        daysPresent: payroll.daysPresent,
+        daysAbsent: payroll.daysAbsent,
+        status: payroll.status,
+        employeeId: payroll.employeeId?._id,
+        employee: {
+            firstName: payroll.employeeId?.general?.firstName || "",
+            lastName: payroll.employeeId?.general?.lastName || "",
+            email: payroll.employeeId?.general?.email || "",
+            phone: payroll.employeeId?.general?.phone || "",
+            gender: payroll.employeeId?.general?.gender || "",
+            role: payroll.employeeId?.general?.role || "",
+            avatar: payroll.employeeId?.general?.avatar || "",
+            department: payroll.employeeId?.employee?.department || "",
+            jobTitle: payroll.employeeId?.employee?.jobTitle || "",
+            jobType: payroll.employeeId?.employee?.jobType || "",
+        },
+    }));
+
+    const totalRecords = await Payroll.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: { payrolls: formattedPayrolls },
+        pagination: {
+            totalRecords,
+            totalPages,
+            currentPage: pageNumber,
+            limit: limitNumber,
+        },
     });
 });
 
