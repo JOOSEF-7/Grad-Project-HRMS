@@ -20,9 +20,9 @@ export default function Payroll() {
   //   dispatch(fetchPayrollEmployees(selectedRange));
   // }, [dispatch, selectedRange]);
 
-  useEffect(() => {
-    dispatch(fetchPayrollSummary());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchPayrollSummary());
+  // }, [dispatch]);
   // حالات التحميل والأخطاء
   if (loading && !analytics) {
     return (

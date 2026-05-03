@@ -19,7 +19,7 @@ const EmployeeHeader = () => {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-10 mt-10 bg-transparent p-4 rounded-2xl">
+      <div className="flex justify-between items-center mb-10  bg-transparent p-4 rounded-2xl">
         {/* Title */}
         <h1 className="text-2xl font-bold text-white tracking-tight">
           Employees

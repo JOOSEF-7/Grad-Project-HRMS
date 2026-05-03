@@ -50,62 +50,50 @@ function HRApproval() {
         </div>
 
         {/* Leave Requests List */}
-        <div className="space-y-4">
-          {list.map((request) => (
-            <div
-              key={request.id}
-              className="flex items-center justify-between group"
-            >
-              {/* User Info */}
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img
-                    src={request.avatar}
-                    alt={request.name}
-                    className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-600/50"
-                  />
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-                </div>
-                <div>
-                  <p className="text-white text-sm font-medium leading-tight">
-                    {request.employeeName}
-                  </p>
-                  <p className="text-slate-400 text-xs mt-0.5">
-                    {request.reason}
-                  </p>
-                </div>
-              </div>
+        {list.map((request) => (
+  <div key={request._id} className="flex items-center justify-between group"> {/* ✅ _id */}
+    <div className="flex items-center gap-3">
+      <img
+        src={request.employee?.avatar} // ✅ nested
+        alt={request.employee?.firstName}
+        className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-600/50"
+      />
+      <div>
+        <p className="text-white text-sm font-medium leading-tight">
+          {request.employee?.firstName} {request.employee?.lastName} {/* ✅ */}
+        </p>
+        <p className="text-slate-400 text-xs mt-0.5">{request.reason}</p>
+      </div>
+    </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
-                {request.status === "Approved" ? (
-                  <span className="px-4 py-2 text-xs font-medium text-emerald-400 bg-emerald-500/20 rounded-full">
-                    Accepted
-                  </span>
-                ) : request.status === "Rejected" ? (
-                  <span className="px-4 py-2 text-xs font-medium text-red-400 bg-red-500/20 rounded-full">
-                    Declined
-                  </span>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => handleAccept(request.id)}
-                      className="px-4 py-2 text-xs font-medium text-white bg-[#0095ff] hover:bg-[#0052cc] rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/25"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => handleDecline(request.id)}
-                      className="px-4 py-2 text-xs font-medium text-slate-300 bg-slate-700/70 hover:bg-slate-600/70 rounded-full transition-all duration-200"
-                    >
-                      Decline
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="flex items-center gap-2">
+      {request.status === "Approved" ? (
+        <span className="px-4 py-2 text-xs font-medium text-emerald-400 bg-emerald-500/20 rounded-full">
+          Accepted
+        </span>
+      ) : request.status === "Rejected" ? (
+        <span className="px-4 py-2 text-xs font-medium text-red-400 bg-red-500/20 rounded-full">
+          Declined
+        </span>
+      ) : (
+        <>
+          <button
+            onClick={() => handleAccept(request._id)} // ✅ _id
+            className="px-4 py-2 text-xs font-medium text-white bg-[#0095ff] hover:bg-[#0052cc] rounded-full transition-all"
+          >
+            Accept
+          </button>
+          <button
+            onClick={() => handleDecline(request._id)} // ✅ _id
+            className="px-4 py-2 text-xs font-medium text-slate-300 bg-slate-700/70 hover:bg-slate-600/70 rounded-full transition-all"
+          >
+            Decline
+          </button>
+        </>
+      )}
+    </div>
+  </div>
+))}
       </BaseCard>
     </div>
   );

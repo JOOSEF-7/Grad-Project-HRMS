@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMonthlyAttendance } from "../../store/HrSlices/attendance/attendanceSlice";
-import { fetchAttendance } from "../../store/HrSlices/attendance/attendanceSlice";
+import { fetchMonthlyAttendance, fetchAttendance } from "../../store/HrSlices/attendance/attendanceSlice";
 
-//  components
+// components
 import EmployeesTable from "../../HrComponents/employees/EmployeesTable/EmployeesTable";
 import EmployeeHeader from "../../HrComponents/employees/EmployeeHeader/EmployeeHeader";
 import HRApproval from "../../HrComponents/employees/HRApproval/HRApproval";
@@ -11,47 +10,62 @@ import AttendanceReport from "../../HrComponents/DashboardComponents/AttendanceR
 
 const Employees = () => {
   const dispatch = useDispatch();
-  const { attendanceList, loading, error, chartData, totals, selectedDate } = useSelector(
+  const { chartData, totals, selectedDate, pagination } = useSelector(
     (state) => state.attendance,
   );
 
-  // تأكدي إن المسميات هنا هي totals و chartData
   const attendanceReportData = {
-    totals,      // دي اللي بتعرض الأرقام الكبيرة على الشمال
-    chartData,   // دي اللي بترسم العواميد
+    totals,
+    chartData,
   };
 
+  // useEffect(() => {
+  //   if (selectedDate) {
+  //     const dateObj = new Date(selectedDate);
+  //     const month = dateObj.getMonth() + 1;
+  //     const year = dateObj.getFullYear();
+
+  //     // 1. طلب بيانات الجدول (مع القيم الافتراضية)
+  //     dispatch(fetchAttendance({ 
+  //       date: selectedDate, 
+  //       page: 1, 
+  //       limit: 5, 
+  //       status: "All" 
+  //     }));
+
+  //     // 2. طلب بيانات الشارت
+  //     dispatch(fetchMonthlyAttendance({ month, year }));
+  //   }
+  // }, [selectedDate, dispatch]);
   useEffect(() => {
-    if (selectedDate) {
-      const dateObj = new Date(selectedDate);
-      const month = dateObj.getMonth() + 1; // 1-12
-      const year = dateObj.getFullYear();
-      
-      dispatch(fetchAttendance(selectedDate)); // للجدول (Daily)
-      dispatch(fetchMonthlyAttendance({ month, year })); // للشارت (6 Months)
-    }
-  }, [selectedDate, dispatch]);
+  if (selectedDate) {
+    const dateObj = new Date(selectedDate);
+    const month = dateObj.getMonth() + 1;
+    const year = dateObj.getFullYear();
+
+    // ✅ شيلي fetchAttendance من هنا — EmployeesTable هتعملها بنفسها
+    dispatch(fetchMonthlyAttendance({ month, year }));
+  }
+}, [selectedDate, dispatch]);
 
   return (
     <div className="max-w-[1650px] mx-auto p-4 bg-transparent">
-      <div className=" space-y-3">
+      <div className="space-y-3">
         <EmployeeHeader />
 
         <AttendanceReport
           title="Performance report"
           desc="Real-time employee attendance report"
-          data={attendanceReportData} // الداتا دلوقتي جاهزة
+          data={attendanceReportData}
           filter="Monthly"
         />
 
-        {/* Bottom Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          {/* Table */}
           <div className="lg:col-span-2">
-            <EmployeesTable attendanceList={attendanceList} />
+            {/* 🛡️ شلنا الـ Props لأن الجدول هيسحب بياناته بنفسه من الـ Redux */}
+            <EmployeesTable /> 
           </div>
 
-          {/* Right Sidebar */}
           <div className="space-y-6">
             <HRApproval />
           </div>

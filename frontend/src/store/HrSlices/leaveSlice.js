@@ -6,13 +6,11 @@ export const fetchAllLeaves = createAsyncThunk(
   "leaves/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      // ✅ المسار الصحيح: /api/leaves (مش /leaves/leaves)
-      const response = await axios.get("/leaves");
+      // ✅ Pending بس في الكارد + limit صغير
+      const response = await axios.get("/leaves?status=Pending");
       return response.data;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to fetch leaves",
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed");
     }
   },
 );
@@ -69,13 +67,11 @@ const leaveSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchAllLeaves.fulfilled, (state, action) => {
-        state.loading = false;
-        state.list = action.payload || [];
+      state.loading = false;
+      // ✅ الداتا جوه action.payload.data
+      state.list = action.payload.data || [];
       })
-      .addCase(fetchAllLeaves.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+    
       // البحث
       .addCase(searchLeaves.pending, (state) => {
         state.searchLoading = true;

@@ -4,16 +4,26 @@ import axios from "../../../services/axios";
 // Fetch Daily Attendance
 export const fetchAttendance = createAsyncThunk(
   "attendance/fetchAttendance",
-  async (date, { rejectWithValue }) => {
+  async ({ date, page = 1, limit = 5, status = "" }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `/attendance?date=${date}`
-      );
+      // ✅ ابدأ بالـ params الأساسية بس
+      let url = `/attendance?page=${page}&limit=${limit}`;
+
+      // ✅ ضيف date بس لو موجودة
+      if (date) {
+        url += `&date=${date}`;
+      }
+
+      // ✅ ضيف status بس لو مش "All"
+      if (status && status !== "All") {
+        url += `&status=${status}`;
+      }
+
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to fetch attendance"
+        error.response?.data?.message || "Failed to fetch attendance"
       );
     }
   }
@@ -34,9 +44,44 @@ export const fetchMonthlyAttendance = createAsyncThunk(
     }
   }
 );
+export const fetchAttendanceSearch = createAsyncThunk(
+  "attendance/fetchAttendanceSearch",
+  async ({ employeeName, date, page = 1, limit = 5 }, { rejectWithValue }) => {
+    try {
+      let url = `/attendance/search?employeeName=${employeeName}&page=${page}&limit=${limit}`;
+      if (date) url += `&date=${date}`;
+
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to search");
+    }
+  }
+);
+export const fetchAttendanceByEmployee = createAsyncThunk(
+  "attendance/fetchAttendanceByEmployee",
+  async ({ employeeId, page = 1, limit = 5, month, year }, { rejectWithValue }) => {
+    try {
+      let url = `/attendance/employee/${employeeId}?page=${page}&limit=${limit}`;
+      if (month) url += `&month=${month}`;
+      if (year) url += `&year=${year}`;
+
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed");
+    }
+  }
+);
 
 const initialState = {
   attendanceList: [],
+  pagination: {       // ضيفي الكائن ده
+    totalRecords: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: 5,
+  },
   chartData: [],
   totals: {
       onTime: 0,
@@ -67,8 +112,11 @@ const attendanceSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchAttendance.fulfilled, (state, action) => {
-        state.loading = false;
-        state.attendanceList = action.payload;
+       state.loading = false;
+       // الباك إيند بيبعت الداتا جوه action.payload.data
+       const { attendance, pagination } = action.payload.data;
+       state.attendanceList = attendance || []; // مصفوفة الموظفين
+       state.pagination = pagination || initialState.pagination; // بيانات الترقيم
       })
       .addCase(fetchAttendance.rejected, (state, action) => {
         state.loading = false;
@@ -104,7 +152,35 @@ const attendanceSlice = createSlice({
       .addCase(fetchMonthlyAttendance.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(fetchAttendanceSearch.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(fetchAttendanceSearch.fulfilled, (state, action) => {
+  state.loading = false;
+  const { attendance, pagination } = action.payload.data;
+  state.attendanceList = attendance || [];
+  state.pagination = pagination || initialState.pagination;
+})
+.addCase(fetchAttendanceSearch.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+})
+.addCase(fetchAttendanceByEmployee.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(fetchAttendanceByEmployee.fulfilled, (state, action) => {
+  state.loading = false;
+  const { attendance, pagination } = action.payload.data;
+  state.attendanceList = attendance || [];
+  state.pagination = pagination || initialState.pagination;
+})
+.addCase(fetchAttendanceByEmployee.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
   },
 });
 export const { setSelectedMonth,setSelectedDate } = attendanceSlice.actions;

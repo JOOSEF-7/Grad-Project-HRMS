@@ -7,7 +7,7 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
-import BaseCard from "../../../UI/Card";
+import BaseCard from "../../../../Components/UI/Card";
 
 import { useDispatch, useSelector } from "react-redux";
 import { updateEmployee } from "../../../../store/HrSlices/employeeSlice";
@@ -39,7 +39,7 @@ const EmployeeProfileCard = ({ employee }) => {
     setFormData(employee);
   }, [employee]);
 
-  if (!employee) return null;
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,8 +69,8 @@ const EmployeeProfileCard = ({ employee }) => {
       {/* Avatar */}
       <div className="flex-shrink-0">
         <img
-          src={employee.image}
-          alt={employee.name}
+          src={employee?.image}
+          alt={employee?.name}
           className="w-28 h-32 md:w-32 md:h-36 rounded-xl object-cover"
         />
       </div>
@@ -81,14 +81,14 @@ const EmployeeProfileCard = ({ employee }) => {
         {!editMode && (
           <>
             <h2 className="text-xl font-semibold text-white mb-2">
-              {employee.name}
+              {employee?.name}
             </h2>
             <div className="flex gap-3 mb-5">
               <span className="flex items-center gap-1.5 text-slate-400 text-sm">
-                <span className="text-cyan-400">&#9794;</span> {employee.gender}
+                <span className="text-cyan-400">&#9794;</span> {employee?.gender}
               </span>
               <span className="flex items-center gap-1.5 text-slate-400 text-sm">
-                <UserCircle size={14} /> {employee.age}
+                <UserCircle size={14} /> {employee?.age}
               </span>
             </div>
 
@@ -96,21 +96,21 @@ const EmployeeProfileCard = ({ employee }) => {
               <InfoItem
                 icon={Briefcase}
                 label="Job type"
-                value={employee.type}
+                value={employee?.type}
               />
               <InfoItem
                 icon={Calendar}
                 label="Joining"
-                value={employee.joiningDate}
+                value={employee?.joiningDate}
               />
-              <InfoItem icon={UserCircle} label="Role" value={employee.role} />
+              <InfoItem icon={UserCircle} label="Role" value={employee?.role} />
               <InfoItem
                 icon={Building}
                 label="Departement"
-                value={employee.department}
+                value={employee?.department}
               />
-              <InfoItem icon={Mail} label="Email" value={employee.email} />
-              <InfoItem icon={Phone} label="Phone" value={employee.phone} />
+              <InfoItem icon={Mail} label="Email" value={employee?.email} />
+              <InfoItem icon={Phone} label="Phone" value={employee?.phone} />
             </div>
 
             <button
@@ -227,74 +227,5 @@ const EmployeeProfileCard = ({ employee }) => {
   );
 };
 
-// const EmployeeProfileCard = ({ employee, onEdit }) => {
-//   const dispatch = useDispatch();
-//   const { loading } = useSelector(state => state.employees);
-
-//   const [editMode, setEditMode] = useState(false);
-//   const [formData, setFormData] = useState(employee);
-//     // update values
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData(prev => ({
-//       ...prev,
-//       [name]: value
-//     }));
-//   };
-//   // Save values
-//     const handleSave = () => {
-//     dispatch(
-//       updateEmployee({
-//         id: employee.id,
-//         updatedData: formData
-//       })
-//     );
-//     setEditMode(false);
-//   };
-
-//   return (
-// <BaseCard className="flex flex-col md:flex-row gap-5 relative">
-//   {/* Edit button */}
-// <button
-//   onClick={onEdit}
-//   className="absolute top-5 right-5 p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 transition-colors"
-//   aria-label="Edit profile"
-// >
-//   <Pencil size={16} className="text-slate-300" />
-// </button>
-
-//   {/* Avatar */}
-//   <div className="flex-shrink-0">
-//     <img
-//       src={employee.image}
-//       alt={employee.name}
-//       className="w-28 h-32 md:w-32 md:h-36 rounded-xl object-cover"
-//     />
-//   </div>
-
-//       {/* Info */}
-//       <div className="flex-1">
-// <h2 className="text-xl font-semibold text-white mb-2">{employee.name}</h2>
-// <div className="flex gap-3 mb-5">
-//   <span className="flex items-center gap-1.5 text-slate-400 text-sm">
-//     <span className="text-cyan-400">&#9794;</span> {employee.gender}
-//   </span>
-//   <span className="flex items-center gap-1.5 text-slate-400 text-sm">
-//     <UserCircle size={14} /> {employee.age}
-//   </span>
-// </div>
-
-// <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
-//   <InfoItem icon={Briefcase} label="Job type" value={employee.type} />
-//   <InfoItem icon={Calendar} label="Joining" value={employee.joiningDate} />
-//   <InfoItem icon={UserCircle} label="Role" value={employee.role} />
-//   <InfoItem icon={Building} label="Departement" value={employee.department} />
-//   <InfoItem icon={Mail} label="Email" value={employee.email} />
-//   <InfoItem icon={Phone} label="Phone" value={employee.phone} />
-// </div>
-//       </div>
-//     </BaseCard>
-//   )
-// }
 
 export default EmployeeProfileCard;

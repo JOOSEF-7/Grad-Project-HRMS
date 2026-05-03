@@ -1,92 +1,98 @@
-import { useDispatch } from "react-redux";
-import { fetchEmployeeSummary } from "../../../store/HrSlices/employeeSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAttendance,fetchAttendanceSearch } from "../../../store/HrSlices/attendance/attendanceSlice";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import DataTable from "../../../Components/table/DataTable";
 import TableControls from "../../../Components/table/TableControls";
 import Pagination from "../../../Components/table/Pagination";
 import EditIcon from "@mui/icons-material/Edit";
-import useTableController from "../../../hooks/useTableController";
 import RowActionMenu from "../../../Components/UI/RowActionMenu";
 import BaseCard from "../../../Components/UI/Card";
-import { useState } from "react";
 import { Eye, Trash2 } from "lucide-react";
 
-// Avatar generator
-const getAvatarUrl = (name, background = "0D8ABC", color = "fff") => {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    name,
-  )}&background=${background}&color=${color}&size=80&bold=true&rounded=true`;
-};
+const getAvatarUrl = (name, background = "0D8ABC", color = "fff") =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${background}&color=${color}&size=80&bold=true&rounded=true`;
 
-// Badge
 const AttendanceBadge = ({ status }) => {
-  const getStatusStyles = () => {
-    switch (status) {
-      case "On-time":
-        return "bg-emerald-500/15 text-emerald-400 border-emerald-400/40";
-      case "Late":
-        return "bg-sky-500/15 text-sky-400 border-sky-400/40";
-      case "Absent":
-      case "Part-time":
-        return "bg-slate-500/20 text-slate-400 border-slate-400/40";
-      default:
-        return "";
-    }
+  const styles = {
+    "On Time": "bg-emerald-500/15 text-emerald-400 border-emerald-400/40",
+    Late: "bg-sky-500/15 text-sky-400 border-sky-400/40",
+    Absent: "bg-slate-500/20 text-slate-400 border-slate-400/40",
   };
 
   return (
-    <span
-      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${getStatusStyles()}`}
-    >
-      <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${styles[status] || ""}`}>
+      <span className="w-1.5 h-1.5 rounded-full bg-current" />
       {status}
     </span>
   );
 };
 
-const EmployeesTable = ({ attendanceList }) => {
+const EmployeesTable = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // 🛡️ دايمًا array
-  const safeAttendanceList = Array.isArray(attendanceList)
-    ? attendanceList
-    : attendanceList?.data || [];
+  const { attendanceList, pagination, selectedDate, loading } = useSelector(
+    (state) => state.attendance
+  );
 
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [recordsPerPage, setRecordsPerPage] = useState(5);
+  const [tableDate, setTableDate] = useState("");
 
-  const handleDetails = (id) => {
-    dispatch(fetchEmployeeSummary(id));
-    navigate(`/employee/${id}`);
-  };
+  // ✅ useEffect واحد بس — بدون pagination.currentPage في الـ deps
+  useEffect(() => {
+  if (searchQuery.trim()) {
+    // ✅ لو فيه search → استخدمي endpoint التاني
+    dispatch(fetchAttendanceSearch({
+      employeeName: searchQuery,
+      date: tableDate,
+      page: 1,
+      limit: recordsPerPage,
+    }));
+  } else {
+    // ✅ لو مفيش search → العادي
+    dispatch(fetchAttendance({
+      date: tableDate,
+      page: 1,
+      limit: recordsPerPage,
+      status: activeFilter,
+    }));
+  }
+}, [dispatch, tableDate, recordsPerPage, activeFilter, searchQuery]);
 
   const columns = [
     {
       header: "Employee",
-      accessor: "name",
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <img
-            src={row.image || getAvatarUrl(row.name)}
-            alt={row.name}
-            className="w-10 h-10 rounded-full"
-          />
-          <div>
-            <p className="text-sm font-medium text-slate-100">{row.name}</p>
-            <p className="text-xs text-slate-500">{row.id}</p>
+      accessor: "firstName",
+      render: (row) => {
+        const fullName = `${row.employee?.firstName || ""} ${row.employee?.lastName || ""}`;
+        return (
+          <div className="flex items-center gap-3">
+            <img
+              src={row.employee?.avatar || getAvatarUrl(fullName)}
+              alt={fullName}
+              className="w-10 h-10 rounded-full"
+            />
+            <div>
+              <p className="text-sm font-medium text-slate-100">{fullName}</p>
+              <p className="text-xs text-slate-500">{row.employeeId}</p>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
-    { header: "Email", accessor: "email" },
-    { header: "Department", accessor: "department" },
+    { header: "Email", accessor: "email",render: (row) => row.employee?.email },
     { header: "Date", accessor: "date" },
-    { header: "Type", accessor: "type" },
+    { header: "Department", accessor: "department",render: (row) => row.employee?.department },
+    { header: "Type", accessor: "jobType", render: (row) => row.employee?.jobType }, // ✅ كانت employmentType (غلط)
     {
       header: "Attendance",
-      accessor: "attendance",
-      render: (row) => <AttendanceBadge status={row.attendance} />,
+      accessor: "status",
+      render: (row) => <AttendanceBadge status={row.status} />,
     },
     {
       header: "Action",
@@ -94,26 +100,27 @@ const EmployeesTable = ({ attendanceList }) => {
       render: (row) => (
         <div className="relative">
           <button
-            onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
+            onClick={() =>
+              setOpenMenuId(openMenuId === row._id ? null : row._id)
+            }
             className="p-2 text-slate-400 hover:text-slate-200"
           >
             <EditIcon />
           </button>
-
           <RowActionMenu
-            isOpen={openMenuId === row.id}
+            isOpen={openMenuId === row._id}
             onClose={() => setOpenMenuId(null)}
             actions={[
               {
                 label: "See Details",
                 icon: Eye,
-                onClick: () => handleDetails(row.id),
+                onClick: () => navigate(`/employee/${row.employeeId}`),
               },
               {
                 label: "Delete",
                 variant: "danger",
                 icon: Trash2,
-                onClick: () => console.log("Delete", row.id),
+                onClick: () => console.log("Delete", row._id),
               },
             ]}
           />
@@ -122,57 +129,62 @@ const EmployeesTable = ({ attendanceList }) => {
     },
   ];
 
-  const {
-    currentData,
-    searchQuery,
-    setSearchQuery,
-    activeFilter,
-    setActiveFilter,
-    recordsPerPage,
-    setRecordsPerPage,
-    currentPage,
-    setCurrentPage,
-    totalRecords,
-    totalPages,
-  } = useTableController({
-    data: safeAttendanceList,
-    searchKeys: ["name", "email", "department", "type"],
-    filterKey: "attendance",
-  });
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+  // ✅ handlePageChange بدون double dispatch
+  const handlePageChange = (newPage) => {
+    dispatch(
+      fetchAttendance({
+        date: tableDate,
+        page: newPage,
+        limit: recordsPerPage,
+        status: activeFilter,
+      })
+    );
   };
 
-  const handleRecordsPerPageChange = (value) => {
-    setRecordsPerPage(value);
-    setCurrentPage(1);
+  const handleRecordsPerPageChange = (newLimit) => {
+    setRecordsPerPage(newLimit); // ✅ الـ useEffect هيحس بالتغيير ويعمل fetch تلقائي
   };
 
   return (
     <BaseCard padding="p-0">
+      {/* ✅ Date Picker خاص بالجدول بس */}
+      <div className="px-6 pt-4">
+        <input
+          type="date"
+          value={tableDate}
+          onChange={(e) => setTableDate(e.target.value)}
+          className="px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-slate-200 focus:outline-none focus:border-cyan-500/50"
+        />
+        {/* زرار Clear لو حبت ترجعي لكل الداتا */}
+        {tableDate && (
+          <button
+            onClick={() => setTableDate("")}
+            className="ml-2 text-sm text-slate-400 hover:text-slate-200"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       <TableControls
         searchTerm={searchQuery}
         setSearchTerm={setSearchQuery}
         filterValue={activeFilter}
-        setFilterValue={setActiveFilter}
-        filterOptions={["All", "On-time", "Late", "Absent"]}
-        setCurrentPage={setCurrentPage}
+        setFilterValue={setActiveFilter} // ✅ الـ useEffect هيحس بالتغيير
+        filterOptions={["All", "On Time", "Late", "Absent"]}
+        setCurrentPage={() => {}} // مش محتاجينها هنا
       />
 
-      <DataTable columns={columns} data={currentData} />
+      <div className={loading ? "opacity-50 pointer-events-none" : ""}>
+        {/* ✅ DataTable تستخدم _id كـ key */}
+        <DataTable columns={columns} data={attendanceList} />
+      </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        handlePageChange={handlePageChange}
-        recordsPerPage={recordsPerPage}
-        handleRecordsPerPageChange={handleRecordsPerPageChange}
-        totalRecords={totalRecords}
-        currentDataLength={currentData.length}
-      />
+<Pagination
+  pagination={pagination}
+  handlePageChange={handlePageChange}
+  handleRecordsPerPageChange={handleRecordsPerPageChange}
+  currentDataLength={attendanceList.length}
+/>
     </BaseCard>
   );
 };

@@ -1,4 +1,4 @@
-import BaseCard from "../../../UI/Card"
+import BaseCard from "../../../../Components/UI/Card"
 
 const LeaveStatCard = ({ title, value, description }) => {
   return (
