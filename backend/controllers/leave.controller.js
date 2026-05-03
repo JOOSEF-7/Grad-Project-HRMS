@@ -99,8 +99,8 @@ export const getAllLeaves = asyncWraper(async (req, res, next) => {
     });
 
     const leaves = await Leave.aggregate(pipeline);
-    const totalRcords = leaves[0].metadata[0]?.totalRecords || 0;
-    const totalPages = Math.ceil(totalRcords / limitNumber);
+    const totalRecords = leaves[0].metadata[0]?.totalRecords || 0;
+    const totalPages = Math.ceil(totalRecords / limitNumber);
     const data = leaves[0].leavesData;
     res.status(200).json({
         data,
