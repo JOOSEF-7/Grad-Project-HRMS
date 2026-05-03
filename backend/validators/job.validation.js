@@ -13,11 +13,21 @@ export const validateJobSchema = z.object({
             required_error: "Job description is required",
         }),
 
-        requirements: z
-            .array(z.string(), {
-                required_error: "Requirements must be an array of strings",
-            })
-            .min(1, "Please provide at least one requirement"),
+        department: z.enum(["UI Design", "Marketing", "Social Media"], {
+            required_error: "Department is required",
+        }),
+
+        experienceLevel: z.enum(["Senior", "Mid-Level", "Junior"], {
+            required_error: "Experience level is required",
+        }),
+
+        jobType: z.enum(["Full-time", "Part-time", "Internship", "Contract"], {
+            required_error: "Job type is required",
+        }),
+
+        workLocation: z.enum(["Remote", "On-site", "Hybrid"], {
+            required_error: "Work location is required",
+        }),
 
         status: z.enum(["Open", "Closed"]).default("Open").optional(),
     }),

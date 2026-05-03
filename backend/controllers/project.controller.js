@@ -7,48 +7,74 @@ import Task from "../models/task.model.js";
 import mongoose from "mongoose";
 
 export const getAllProjects = asyncWraper(async (req, res, next) => {
-    const { tag, status, priority, startDate, deadline } = req.query;
+    const { tag, status, priority, startDate, deadline, createdBy } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    const pipeline = [];
+    const matchCondition = {};
 
     if (tag) {
-        pipeline.push({ $match: { "general.tag": tag } });
+        matchCondition["general.tag"] = tag;
     }
 
     if (status) {
-        pipeline.push({ $match: { "assignment.status": status } });
+        matchCondition["assignment.status"] = status;
     }
 
     if (priority) {
-        pipeline.push({ $match: { "assignment.priority": priority } });
+        matchCondition["assignment.priority"] = priority;
     }
 
     if (startDate) {
-        pipeline.push({
-            $match: { "general.startDate": { $gte: new Date(startDate) } },
-        });
+        matchCondition["general.startDate"] = { $gte: new Date(startDate) };
     }
 
     if (deadline) {
-        pipeline.push({
-            $match: { "general.deadline": { $lte: new Date(deadline) } },
-        });
+        matchCondition["general.deadline"] = { $lte: new Date(deadline) };
     }
 
-    pipeline.push({
-        $lookup: {
-            from: "tasks",
-            localField: "_id",
-            foreignField: "projectId",
-            as: "subTasks",
-        },
-    });
+    if (createdBy) {
+        matchCondition.createdBy = createdBy;
+    }
 
-    const projects = await Project.aggregate(pipeline);
+    const result = await Project.aggregate([
+        { $match: matchCondition },
+        {
+            $facet: {
+                metadata: [{ $count: "totalRecords" }],
+                data: [
+                    { $sort: { createdAt: -1 } },
+                    { $skip: skip },
+                    { $limit: limit },
+                    {
+                        $lookup: {
+                            from: "tasks",
+                            localField: "_id",
+                            foreignField: "projectId",
+                            as: "subTasks",
+                        },
+                    },
+                    { $project: { __v: 0 } },
+                ],
+            },
+        },
+    ]);
+
+    const totalRecords = result[0]?.metadata[0]?.totalRecords || 0;
+    const projects = result[0]?.data || [];
 
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { projects },
+        data: {
+            projects,
+            pagination: {
+                totalRecords,
+                currentPage: page,
+                totalPages: Math.ceil(totalRecords / limit),
+                limit,
+            },
+        },
     });
 });
 
@@ -85,6 +111,7 @@ export const getProjectById = asyncWraper(async (req, res, next) => {
 });
 
 export const createProject = asyncWraper(async (req, res, next) => {
+    console.log(req.body);
     const { general, assignment, documents, subTasks } = req.body;
     const oldProject = await Project.findOne({ "general.name": general.name });
     if (oldProject) {
@@ -161,7 +188,6 @@ export const deleteProject = asyncWraper(async (req, res, next) => {
     res.json({ status: httpResponseText.SUCCESS, data: null });
 });
 
-
 export const getProjectStats = asyncWraper(async (req, res, next) => {
     const stats = await Project.aggregate([
         {
@@ -169,16 +195,34 @@ export const getProjectStats = asyncWraper(async (req, res, next) => {
                 _id: null,
                 total: { $sum: 1 },
                 ongoing: {
-                    $sum: { $cond: [{ $eq: ["$assignment.status", "On-going"] }, 1, 0] }
+                    $sum: {
+                        $cond: [
+                            { $eq: ["$assignment.status", "On-going"] },
+                            1,
+                            0,
+                        ],
+                    },
                 },
                 pending: {
-                    $sum: { $cond: [{ $eq: ["$assignment.status", "Pending"] }, 1, 0] }
+                    $sum: {
+                        $cond: [
+                            { $eq: ["$assignment.status", "Pending"] },
+                            1,
+                            0,
+                        ],
+                    },
                 },
                 completed: {
-                    $sum: { $cond: [{ $eq: ["$assignment.status", "Completed"] }, 1, 0] }
-                }
-            }
-        }
+                    $sum: {
+                        $cond: [
+                            { $eq: ["$assignment.status", "Completed"] },
+                            1,
+                            0,
+                        ],
+                    },
+                },
+            },
+        },
     ]);
 
     const data = stats[0] || { total: 0, ongoing: 0, pending: 0, completed: 0 };
@@ -196,12 +240,13 @@ export const getProjectStats = asyncWraper(async (req, res, next) => {
     });
 });
 
-
 export const searchProjects = asyncWraper(async (req, res, next) => {
     const { name } = req.query;
 
     if (!name) {
-        return res.status(200).json({ status: httpResponseText.SUCCESS, data: { results: [] } });
+        return res
+            .status(200)
+            .json({ status: httpResponseText.SUCCESS, data: { results: [] } });
     }
 
     const results = await Project.aggregate([
@@ -211,13 +256,13 @@ export const searchProjects = asyncWraper(async (req, res, next) => {
                 _id: 1,
                 "general.name": 1,
                 "general.avatar": 1,
-                "assignment.status": 1
-            }
-        }
+                "assignment.status": 1,
+            },
+        },
     ]);
 
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { results }
+        data: { results },
     });
 });

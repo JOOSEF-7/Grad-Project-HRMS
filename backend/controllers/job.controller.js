@@ -6,42 +6,55 @@ import { flatten } from "flat";
 import appErrors from "../utils/errors.js";
 
 export const getAllJobs = asyncWraper(async (req, res, next) => {
-    const jobs = await Job.aggregate([
+    const { department, experienceLevel, jobType } = req.query;
+    
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const matchCondition = {};
+    if (department) matchCondition.department = department;
+    if (experienceLevel) matchCondition.experienceLevel = experienceLevel;
+    if (jobType) matchCondition.jobType = jobType;
+
+    const result = await Job.aggregate([
+        { $match: matchCondition },
         {
-            $lookup: {
-                from: "applicants",
-                localField: "_id",
-                foreignField: "jobId",
-                as: "jobApplicants",
-            },
-        },
-        { $project: { __v: 0 } }
+            $facet: {
+                metadata: [{ $count: "totalRecords" }],
+                data: [
+                    { $sort: { createdAt: -1 } },
+                    { $skip: skip },
+                    { $limit: limit },
+                    { $project: { __v: 0 } }
+                ]
+            }
+        }
     ]);
+
+    const totalRecords = result[0]?.metadata[0]?.totalRecords || 0;
+    const jobs = result[0]?.data || [];
 
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { jobs },
+        data: { 
+            jobs,
+            pagination: {
+                totalRecords,
+                currentPage: page,
+                totalPages: Math.ceil(totalRecords / (limit || 1)) || 0,
+                limit
+            }
+        },
     });
 });
 
 export const getJobById = asyncWraper(async (req, res, next) => {
     const JobID = req.params.id;
-    const job = await Job.aggregate([
-        {
-            $match: { _id: new mongoose.Types.ObjectId(JobID) },
-        },
-        {
-            $lookup: {
-                from: "applicants",
-                localField: "_id",
-                foreignField: "jobId",
-                as: "jobApplicants",
-            },
-        },
-        { $project: { __v: 0 } }
-    ]);
 
-    if (!job || job.length === 0) {
+    const job = await Job.findById(JobID, { __v: 0 });
+
+    if (!job) {
         const error = appErrors.create(
             404,
             "Job Not Found",
@@ -52,37 +65,29 @@ export const getJobById = asyncWraper(async (req, res, next) => {
 
     res.json({
         status: httpResponseText.SUCCESS,
-        data: { job: job[0] },
+        data: { job },
     });
 });
 
 export const createJob = asyncWraper(async (req, res, next) => {
-    const { title, description, requirements } = req.body;
-
-    const oldJob = await Job.findOne({ title });
-
-    if (oldJob) {
-        const error = appErrors.create(
-            400,
-            "Job Already Exists",
-            httpResponseText.FAIL
-        );
-        return next(error);
-    }
+    const { title, description, department, experienceLevel, jobType, workLocation } = req.body;
 
     const createdBy = req.currentUser.userId;
 
     const newJob = new Job({
         title,
         description,
-        requirements,
+        department,
+        experienceLevel,
+        jobType,
+        workLocation,
         createdBy,
-
     });
 
     newJob.__v = undefined;
 
     await newJob.save();
+    
     res.status(201).json({
         status: httpResponseText.SUCCESS,
         data: { newJob },
@@ -150,8 +155,12 @@ export const searchJobs = asyncWraper(async (req, res, next) => {
             $project: {
                 _id: 1,
                 title: 1,
+                department: 1,
+                experienceLevel: 1,
+                jobType: 1,
+                workLocation: 1,
                 status: 1,
-                date: 1
+                createdAt: 1
             }
         }
     ]);

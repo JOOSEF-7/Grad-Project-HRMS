@@ -5,8 +5,30 @@ import appErrors from "../utils/errors.js";
 import { asyncWraper } from "../Middleware/asyncWraper.js";
 
 export const getAllTasks = asyncWraper(async (req, res, next) => {
-    const tasks = await Task.find();
-    res.status(200).json({ status: httpResponseText.SUCCESS, data: { tasks } });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [totalRecords, tasks] = await Promise.all([
+        Task.countDocuments(),
+        Task.find()
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+    ]);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: {
+            tasks,
+            pagination: {
+                totalRecords,
+                currentPage: page,
+                totalPages: Math.ceil(totalRecords / limit),
+                limit,
+            },
+        },
+    });
 });
 
 export const getTasksByProjectId = asyncWraper(async (req, res, next) => {
@@ -45,6 +67,14 @@ export const createTask = asyncWraper(async (req, res, next) => {
 export const updateTask = asyncWraper(async (req, res, next) => {
     const taskId = req.params.id;
 
+    if (Object.keys(req.body).length === 0) {
+        const error = appErrors.create(
+            400,
+            "Please provide data to update",
+            httpResponseText.FAIL
+        );
+        return next(error);
+    }
     const updatedTask = await Task.findByIdAndUpdate(
         taskId,
         { $set: req.body }, 

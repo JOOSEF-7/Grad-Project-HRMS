@@ -16,6 +16,7 @@ import {
     validateProjectSchema,
     updateValidateProjectSchema,
     searchProjectsSchema,
+    validateProjectQueryParamsSchema,
 } from "../validators/project.validation.js";
 import { setFilesToBody } from "../Middleware/setFilesToBody.js";
 import upload from "../Middleware/multerConfig.js";
@@ -23,7 +24,7 @@ import { processUploadedFile } from "../Middleware/processUploads.js";
 
 router
     .route("/")
-    .get(verifyToken, getAllProjects)
+    .get(verifyToken, allowedTo("HR"), validate(validateProjectQueryParamsSchema), getAllProjects)
     .post(
         verifyToken,
         allowedTo("HR", "MANAGER"),
