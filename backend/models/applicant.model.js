@@ -4,49 +4,93 @@ import { modelConfig } from "../utils/modelConfig.js";
 
 const applicantSchema = new mongoose.Schema(
     {
-        jobId: { type: mongoose.Schema.Types.ObjectId, ref: "Job" },
+        jobId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Job",
+            required: true,
+        },
 
-        firstName: {
-            type: String,
-            required: true,
-            minLength: [3, "the minimum number of chracter is 3"],
+        personalInfo: {
+            firstName: {
+                type: String,
+                required: [true, "First name is required"],
+            },
+            lastName: {
+                type: String,
+                required: [true, "Last name is required"],
+            },
+            email: {
+                type: String,
+                required: [true, "Email address is required"],
+                validate: [validator.isEmail, "Invalid email address"],
+            },
+            phone: {
+                type: String,
+                required: [true, "Phone number is required"],
+            },
+            dateOfBirth: { type: Date },
+            gender: {
+                type: String,
+                enum: ["Male", "Female"],
+                required: [true, "Gender is required"],
+            },
+            city: { type: String },
+            country: { type: String },
+            department: {
+                type: String,
+                enum: ["UI Design", "Marketing", "Social Media"],
+                required: [true, "Department is required"],
+            },
+            experienceLevel: {
+                type: String,
+                enum: ["Senior", "Mid-Level", "Junior"],
+                required: [true, "Experience level is required"],
+            },
+            avatar: {
+                type: String,
+                default: "/uploads/default-avatar.png",
+            },
         },
-        lastName: {
-            type: String,
-            required: true,
-            minLength: [3, "the minimum number of chracter is 3"],
+        
+        professionalInfo: {
+            yearsOfExperience: { type: String },
+            currentJobTitle: { type: String },
+            currentCompany: { type: String },
+            educationLevel: {
+                type: String,
+                enum: ["High School", "Bachelor's", "Master's", "PhD"],
+                required: [true, "Education level is required"],
+            },
+            skills: { type: [String] },
         },
-        gender: { type: String, enum: ["Male", "Female"] },
-        phone: {
-            type: String,
-            required: true,
-            minLength: [6, "the phone number must be at least 6 numbes long"],
+
+        documents: {
+            resume: {
+                type: String,
+                required: [true, "Resume is required"],
+            },
+            portfolio: { type: String },
         },
-        email: {
-            type: String,
-            required: true,
-            validate: [validator.isEmail, "Invalid email"],
+
+        additionalQuestions: {
+            motivation: {
+                type: String,
+                required: [true, "Motivation is required"],
+            },
+            earliestStartDate: {
+                type: Date,
+                required: [true, "Earliest start date is required"],
+            },
+            workPreference: {
+                type: String,
+                enum: ["Remote", "On-site", "Hybrid"],
+                required: [true, "Work preference is required"],
+            },
         },
-        resumeLink: String,
         status: {
             type: String,
             enum: ["Applied", "Interviewing", "Hired", "Rejected"],
             default: "Applied",
-        },
-        avatar: {
-            type: String,
-            default: "/uploads/default-avatar.png",
-        },
-        experience: {
-            company: { type: String },
-            position: { type: String },
-            jobType: {
-                type: String,
-                enum: ["Full-time", "Part-time", "Internship"],
-            },
-            baseSalary: { type: Number },
-            startDate: { type: Date },
-            endDate: { type: Date },
         },
     },
     modelConfig

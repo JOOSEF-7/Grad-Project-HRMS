@@ -6,17 +6,42 @@ import { flatten } from "flat";
 import { asyncWraper } from "../Middleware/asyncWraper.js";
 
 export const getAllUsers = asyncWraper(async (req, res, next) => {
-    const users = await User.find(
-        {},
-        {
-            __v: false,
-            "general.password": false,
-            "general.passwordResetCode": false,
-            "general.passwordResetExpires": false,
-            "general.passwordResetVerified": false,
-        }
-    );
-    res.status(200).json({ status: httpResponseText.SUCCESS, data: { users } });
+    
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { "general.role": "EMPLOYEE" };
+
+    const [totalRecords, users] = await Promise.all([
+        User.countDocuments(filter),
+        User.find(
+            filter,
+            {
+                __v: false,
+                "general.password": false,
+                "general.passwordResetCode": false,
+                "general.passwordResetExpires": false,
+                "general.passwordResetVerified": false,
+            }
+        )
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
+
+    res.status(200).json({
+        status: httpResponseText.SUCCESS,
+        data: {
+            users,
+            pagination: {
+                totalRecords,
+                currentPage: page,
+                totalPages: Math.ceil(totalRecords / limit),
+                limit,
+            },
+        },
+    });
 });
 
 export const getUserById = asyncWraper(async (req, res, next) => {

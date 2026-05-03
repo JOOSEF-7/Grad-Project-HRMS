@@ -69,13 +69,24 @@ export const validateProjectSchema = z.object({
 export const updateValidateProjectSchema = z.object({
     body: z
         .object({
-            general: validateProjectSchema.shape.body.shape.general.partial(),
+            general: validateProjectSchema.shape.body.shape.general.partial().optional(),
             assignment:
-                validateProjectSchema.shape.body.shape.assignment.partial(),
-            documents: validateProjectSchema.shape.body.shape.documents,
-            subTasks: validateProjectSchema.shape.body.shape.subTasks,
+                validateProjectSchema.shape.body.shape.assignment.partial().optional,
+            documents: validateProjectSchema.shape.body.shape.documents.optional(),
         })
         .partial(),
+});
+export const validateProjectQueryParamsSchema = z.object({
+    query: z.object({
+        tag: z.enum(["UI Design", "Marketing", "Social Media"]).optional(),
+        status: z.enum(["On-going", "Pending", "Completed"]).optional(),
+        priority: z.enum(["High", "Medium", "Low"]).optional(),
+        deadline: z.coerce.date({ required_error: "Deadline is required" }).optional(),
+        startDate: z.coerce.date().optional(),
+        createdBy: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid User ID").optional(),
+        page: z.string().optional().default("1"),
+        limit: z.string().optional().default("10"),
+    })
 });
 
 export const searchProjectsSchema = z.object({

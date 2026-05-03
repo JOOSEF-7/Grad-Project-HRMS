@@ -5,28 +5,80 @@ import { asyncWraper } from "../Middleware/asyncWraper.js";
 import {flatten} from "flat";
 import appErrors from "../utils/errors.js";
 
-export const getAllApplicants = asyncWraper(async (req, res, next) => {
-    const applicants = await Applicant.find({}, { __v: false });
+export const getAllApplicantsWithFilters = asyncWraper(async (req, res, next) => {
+    const status = req.query.status;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const matchCondition = {};
+    if (status) {
+        matchCondition.status = status;
+    }
+
+    const result = await Applicant.aggregate([
+        { $match: matchCondition },
+        {
+            $facet: {
+                metadata: [{ $count: "totalRecords" }],
+                data: [
+                    { $sort: { createdAt: -1 } },
+                    { $skip: skip },
+                    { $limit: limit },
+                    {
+                        $project: {
+                            "personalInfo.firstName": 1,
+                            "personalInfo.lastName": 1,
+                            "personalInfo.email": 1,
+                            "personalInfo.department": 1,
+                            "personalInfo.experienceLevel": 1,
+                            "personalInfo.avatar": 1,
+                            status: 1,
+                            createdAt: 1
+                        }
+                    }
+                ]
+            }
+        }
+    ]);
+
+    const totalRecords = result[0]?.metadata[0]?.totalRecords || 0;
+    const applicants = result[0]?.data || [];
+
     res.status(200).json({
         status: httpResponseText.SUCCESS,
-        data: { applicants },
+        data: {
+            applicants,
+            pagination: {
+                totalRecords,
+                currentPage: page,
+                totalPages: Math.ceil(totalRecords / (limit || 1)) || 0,
+                limit
+            }
+        }
     });
 });
 
 
 export const getApplicantById = asyncWraper(async (req, res, next) => {
     const applicantId = req.params.id;
+
     const applicant = await Applicant.findById(applicantId, {
-        __v: false,
+        "personalInfo.firstName": 1,
+        "personalInfo.lastName": 1,
+        "personalInfo.email": 1,
+        "personalInfo.department": 1,
+        "personalInfo.experienceLevel": 1,
+        "personalInfo.avatar": 1,
+        status: 1,
+        createdAt: 1
     });
+
     if (!applicant) {
-        const error = appErrors.create(
-            404,
-            "Applicant Not Found",
-            httpResponseText.FAIL
-        );
+        const error = appErrors.create(404, "Applicant Not Found", httpResponseText.FAIL);
         return next(error);
     }
+
     res.json({
         status: httpResponseText.SUCCESS,
         data: { applicant },
@@ -67,7 +119,7 @@ export const createApplicant = asyncWraper(async (req, res, next) => {
         return next(error);
     }
     const oldApplicant = await Applicant.findOne({
-        email: req.body.email,
+        "personalInfo.email": req.body.personalInfo?.email,
         jobId: jobId,
     });
 
@@ -89,6 +141,7 @@ export const createApplicant = asyncWraper(async (req, res, next) => {
         status: httpResponseText.SUCCESS,
         data: { newApplicant },
     });
+    
 });
 
 export const updateApplicant = asyncWraper(async (req, res, next) => {
@@ -164,58 +217,6 @@ export const getHiringStatistics = asyncWraper(async (req, res, next) => {
     });
 });
 
-export const getHiringApplicantsList = asyncWraper(async (req, res, next) => {
-    const filterStatus = req.query.status;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const matchCondition = filterStatus && filterStatus !== "All" 
-        ? { status: filterStatus } 
-        : {};
-
-    const result = await Applicant.aggregate([
-        { $match: matchCondition },
-        {
-            $facet: {
-                metadata: [{ $count: "totalRecords" }],
-                data: [
-                    { $sort: { createdAt: -1 } },
-                    { $skip: skip },
-                    { $limit: limit },
-                    {
-                        $project: {
-                            firstName: 1,
-                            lastName: 1,
-                            avatar: 1,
-                            status: 1,
-                            "experience.position": 1,
-                            createdAt: 1
-                        }
-                    }
-                ]
-            }
-        }
-    ]);
-
-    const totalRecords = result[0]?.metadata[0]?.totalRecords || 0;
-    const applicantsList = result[0]?.data || [];
-
-    res.status(200).json({
-        status: httpResponseText.SUCCESS,
-        data: {
-            applicantsList,
-            pagination: {
-                totalRecords,
-                currentPage: page,
-                totalPages: Math.ceil(totalRecords / (limit || 1)) || 0,
-                limit
-            }
-        }
-    });
-});
-
-
 export const searchApplicants = asyncWraper(async (req, res, next) => {
     const { name } = req.query;
 
@@ -227,12 +228,12 @@ export const searchApplicants = asyncWraper(async (req, res, next) => {
         {
             $match: {
                 $or: [
-                    { firstName: { $regex: name, $options: "i" } },
-                    { lastName: { $regex: name, $options: "i" } },
+                    { "personalInfo.firstName": { $regex: name, $options: "i" } },
+                    { "personalInfo.lastName": { $regex: name, $options: "i" } },
                     { 
                         $expr: {
                             $regexMatch: {
-                                input: { $concat: ["$firstName", " ", "$lastName"] },
+                                input: { $concat: ["$personalInfo.firstName", " ", "$personalInfo.lastName"] },
                                 regex: name,
                                 options: "i"
                             }
@@ -244,11 +245,14 @@ export const searchApplicants = asyncWraper(async (req, res, next) => {
         {
             $project: {
                 _id: 1,
-                firstName: 1,
-                lastName: 1,
-                avatar: 1,
+                "personalInfo.firstName": 1,
+                "personalInfo.lastName": 1,
+                "personalInfo.email": 1,
+                "personalInfo.department": 1,
+                "personalInfo.experienceLevel": 1,
+                "personalInfo.avatar": 1,
                 status: 1,
-                "experience.position": 1
+                createdAt: 1
             }
         }
     ]);
