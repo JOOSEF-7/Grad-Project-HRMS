@@ -18,7 +18,8 @@ education_match = np.random.choice([0, 1], p=[0.3, 0.7], size=n_samples)
 
 base_score = (skills_match * 50) + (np.clip(experience_gap + 3, 0, 6) / 6 * 35) + (education_match * 15)
 noise = np.random.normal(0, 3, n_samples)
-y = np.clip(base_score + noise, 0, 100)
+
+y = np.clip(base_score + noise, 0, 100) # for Overfitting
 
 X = pd.DataFrame({
     'skills_match': skills_match,

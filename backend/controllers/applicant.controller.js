@@ -36,22 +36,18 @@ export const getAllApplicantsWithFilters = asyncWraper(
                         { $sort: { atsScore: -1, createdAt: -1 } },
                         { $skip: skip },
                         { $limit: limit },
-                        // ==========================================
-                        // 🔗 1. ربط المتقدم بالوظيفة (Join)
-                        // ==========================================
                         {
                             $lookup: {
-                                from: "jobs", // اسم كوليكشن الوظائف في الداتابيز (بيكون جمع وسمول)
-                                localField: "jobId", // الـ ID اللي في المتقدم
-                                foreignField: "_id", // الـ ID اللي في الوظيفة
-                                as: "jobDetails", // اسم الحقل الجديد اللي هيرجع
+                                from: "jobs",
+                                localField: "jobId",
+                                foreignField: "_id",
+                                as: "jobDetails", 
                             },
                         },
-                        // 🔗 2. تحويل الـ Array اللي راجعة لـ Object واحد
                         {
                             $unwind: {
                                 path: "$jobDetails",
-                                preserveNullAndEmptyArrays: true, // عشان لو الوظيفة ممسوحة المتقدم ميختفيش
+                                preserveNullAndEmptyArrays: true,
                             },
                         },
                         {
@@ -65,9 +61,6 @@ export const getAllApplicantsWithFilters = asyncWraper(
                                 status: 1,
                                 atsScore: 1,
                                 createdAt: 1,
-                                // ==========================================
-                                // 🎯 3. اختيار بيانات الوظيفة اللي هتتعرض للـ HR
-                                // ==========================================
                                 "jobDetails._id": 1,
                                 "jobDetails.title": 1,
                                 "jobDetails.department": 1,
@@ -100,12 +93,11 @@ export const getAllApplicantsWithFilters = asyncWraper(
 export const getApplicantById = asyncWraper(async (req, res, next) => {
     const applicantId = req.params.id;
 
-    // تم إضافة populate لجلب بيانات الوظيفة
     const applicant = await Applicant.findById(applicantId)
         .select("-__v")
         .populate({
             path: "jobId",
-            select: "title department experienceLevel jobType workLocation", // الحقول اللي محتاجينها بس
+            select: "title department experienceLevel jobType workLocation",
         });
 
     if (!applicant) {
@@ -130,7 +122,7 @@ export const getApplicantsByJobId = asyncWraper(async (req, res, next) => {
         .sort({ atsScore: -1 })
         .populate({
             path: "jobId",
-            select: "title department", // ببعت التايتل والقسم بس عشان حجم الريكوست ميكبرش
+            select: "title department",
         });
 
     if (applicants.length === 0) {
@@ -168,13 +160,12 @@ export const createApplicant = asyncWraper(async (req, res, next) => {
             )
         );
 
-    // 🧠 أ. مرحلة الـ Feature Engineering واستخراج الميزات الحية
     const skillsMatchScore = calculateSkillsMatch(
         job.requiredSkills,
         req.body.professionalInfo?.skills || []
     );
 
-    // حماية ديناميكية للوظائف القديمة التي لا تحتوي على requiredExperienceYears لمنع الـ NaN
+    
     const jobExp = job.requiredExperienceYears || 0;
     const applicantExp =
         parseFloat(req.body.professionalInfo?.yearsOfExperience) || 0;
@@ -185,7 +176,6 @@ export const createApplicant = asyncWraper(async (req, res, next) => {
         req.body.professionalInfo?.educationLevel
     );
 
-    // 🤖 ب. مرحلة تشغيل الموديل وحساب الـ Score عبر بيئة ONNX Runtime القياسية
     let atsScore = 0;
     try {
         const modelPath = path.resolve("./ml_models/ats_scorer.onnx");
