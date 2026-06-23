@@ -53,7 +53,7 @@ router
         createProject
     );
 
-router.route("/stats").get(verifyToken, getProjectStats);
+router.route("/stats").get(verifyToken, allowedTo( "EMPLOYEE", "HR", "MANAGER"), getProjectStats);
 
 router
     .route("/search")

@@ -190,7 +190,9 @@ export const getDashboardStatistics = asyncWraper(async (req, res, next) => {
     const pay = payrollStats[0] || { currentTotal: 0, previousTotal: 0 };
 
     const calcPercentage = (current, previous) => {
-        if (previous === 0) return 0;
+        if (previous === 0) {
+            return current === 0 ? 0 : 100;
+        }
         return Math.round(((current - previous) / previous) * 100);
     };
 
@@ -353,7 +355,7 @@ export const getProjectSummary = asyncWraper(async (req, res, next) => {
 
     const result = await Project.aggregate([
         { $match: { status: filterStatus } },
-        
+
         {
             $lookup: {
                 from: "users",
@@ -408,7 +410,12 @@ export const getProjectSummary = asyncWraper(async (req, res, next) => {
                             $round: [
                                 {
                                     $multiply: [
-                                        { $divide: ["$completedTasks", "$totalTasks"] },
+                                        {
+                                            $divide: [
+                                                "$completedTasks",
+                                                "$totalTasks",
+                                            ],
+                                        },
                                         100,
                                     ],
                                 },

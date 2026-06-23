@@ -8,8 +8,8 @@ import { validate } from "../Middleware/validate.Middelware.js";
 
 import {getEmployeeDashboardStats, getMyProjects, getRecentRequests} from "../controllers/employeeDashboard.controller.js";
 
-router.route("/dashboard-stats").get(verifyToken, allowedTo("EMPLOYEE", "HR"), getEmployeeDashboardStats);
+router.route("/dashboard-stats").get(verifyToken, allowedTo("EMPLOYEE", "HR", "MANAGER"), getEmployeeDashboardStats);
 router.route("/my-projects").get(verifyToken, allowedTo("EMPLOYEE"), getMyProjects);
-router.route("/recent-requests").get(verifyToken, allowedTo("EMPLOYEE"), getRecentRequests);
+router.route("/recent-requests").get(verifyToken, allowedTo("EMPLOYEE", "HR", "MANAGER"), getRecentRequests);
 
 export default router;
