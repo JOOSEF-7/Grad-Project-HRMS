@@ -31,12 +31,12 @@ export const fetchEmployeeById = createAsyncThunk(
     }
   }
 );
-// 1. البحث في الموظفين
+
 export const searchEmployees = createAsyncThunk(
   "employees/search",
   async (query, { rejectWithValue }) => {
     try {
-   
+
       const response = await axios.get(`/employees/search?query=${query}`);
       return response.data;
     } catch (err) {
@@ -44,12 +44,12 @@ export const searchEmployees = createAsyncThunk(
     }
   },
 );
-// البحث المتقدم في الموظفين
+
 export const searchEmployeesByName = createAsyncThunk(
   "employees/searchByName",
   async (name, { rejectWithValue }) => {
     try {
-      
+
       const response = await axios.get(`/users/search`, {
         params: { name }
       });
@@ -149,7 +149,7 @@ const employeeSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-   
+
       .addCase(fetchAllEmployees.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -213,7 +213,7 @@ const employeeSlice = createSlice({
 
         console.log("Search Response:", action.payload); // ← شوف الـ structure
 
-       
+
         const raw = action.payload.data?.results
           ?? action.payload.data
           ?? action.payload
@@ -232,7 +232,7 @@ const employeeSlice = createSlice({
         state.error = action.payload;
         state.employeesList = [];
       })
-    
+
       .addCase(fetchEmployeeSummary.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -263,17 +263,17 @@ const employeeSlice = createSlice({
         }
       })
 
-      // أثناء التحميل
+
       .addCase(updateEmployee.pending, (state) => {
         state.loading = true;
       })
 
-    
+
       .addCase(updateEmployee.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-     
+
       .addCase(deleteEmployee.fulfilled, (state, action) => {
         state.employeesList = state.employeesList.filter(
           (emp) => emp._id !== action.payload
@@ -282,34 +282,34 @@ const employeeSlice = createSlice({
           (emp) => emp._id !== action.payload
         );
 
-     
+
         if (state.pagination.totalRecords > 0) {
           state.pagination.totalRecords -= 1;
         }
 
         state.loading = false;
       }).addCase(fetchHRs.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-.addCase(fetchHRs.fulfilled, (state, action) => {
-  state.loading = false;
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchHRs.fulfilled, (state, action) => {
+        state.loading = false;
 
-  const { users, pagination } = action.payload.data;
+        const { users, pagination } = action.payload.data;
 
-  state.employeesList = users || [];
+        state.employeesList = users || [];
 
-  state.pagination = {
-    currentPage: pagination.currentPage ?? 1,
-    totalPages: pagination.totalPages ?? 1,
-    totalRecords: pagination.totalRecords ?? 0,
-    limit: pagination.limit ?? 5,
-  };
-})
-.addCase(fetchHRs.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload;
-})
+        state.pagination = {
+          currentPage: pagination.currentPage ?? 1,
+          totalPages: pagination.totalPages ?? 1,
+          totalRecords: pagination.totalRecords ?? 0,
+          limit: pagination.limit ?? 5,
+        };
+      })
+      .addCase(fetchHRs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
   },
 });
 
