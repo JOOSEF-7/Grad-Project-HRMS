@@ -12,10 +12,8 @@ cloudinary.config({
 });
 
 export const processUploadedFile2 = asyncWraper(async (req, res, next) => {
-    // 1. فحص ذكي للملفات (Array أو Object)
     if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) return next();
 
-    // 2. توحيد شكل البيانات لمصفوفة (عشان نخلص من وجع دماغ الـ iterable)
     const fileArray = Array.isArray(req.files) 
         ? req.files 
         : Object.values(req.files).flat();
@@ -23,7 +21,6 @@ export const processUploadedFile2 = asyncWraper(async (req, res, next) => {
     const uploadPromises = fileArray.map((file) => {
         return new Promise(async (resolve, reject) => {
             try {
-                // معالجة الصور بـ Sharp
                 if (file.mimetype.startsWith("image/")) {
                     const bufferAfterSharp = await sharp(file.buffer)
                         .resize({ width: 800, withoutEnlargement: true })
@@ -34,17 +31,27 @@ export const processUploadedFile2 = asyncWraper(async (req, res, next) => {
                         { folder: "hrms_uploads" },
                         (error, result) => {
                             if (error) return reject(error);
-                            // بنحط اللينك هنا عشان setFilesToBody تشوفه
                             file.path = result.secure_url; 
                             resolve();
                         }
                     );
                     streamifier.createReadStream(bufferAfterSharp).pipe(uploadStream);
                 } 
-                // معالجة الملفات الـ PDF
-                else if (file.mimetype === "application/pdf") {
+                else if (
+                    file.mimetype === "application/pdf" || 
+                    file.mimetype === "application/msword" || 
+                    file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                ) {
+                    let fileFormat = "pdf";
+                    if (file.mimetype === "application/msword") fileFormat = "doc";
+                    if (file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") fileFormat = "docx";
+
                     const uploadStream = cloudinary.uploader.upload_stream(
-                        { folder: "hrms_documents", resource_type: "raw" },
+                        { 
+                            folder: "hrms_documents", 
+                            resource_type: "raw",
+                            format: fileFormat
+                        },
                         (error, result) => {
                             if (error) return reject(error);
                             file.path = result.secure_url;

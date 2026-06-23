@@ -36,7 +36,7 @@ const jobSchema = new mongoose.Schema(
             default: "Open",
         },
         requiredSkills: {
-            type: [String], // مثال: ["React", "Node.js", "MongoDB"]
+            type: [String], // ["React", "Node.js", "MongoDB"]
             required: true,
         },
         requiredExperienceYears: {

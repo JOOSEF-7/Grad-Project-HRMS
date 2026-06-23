@@ -1,5 +1,5 @@
-import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
 
 import {
@@ -32,10 +32,9 @@ const EmployeeAttendanceTable = () => {
   const dispatch = useDispatch();
 
   const { myAttendance, myAttendanceLoading } = useSelector(
-    (state) => state.empAttendance
+    (state) => state.empAttendance,
   );
 
-  // 🔹 جيبي بيانات الموظف الحالي من auth state
   const { user } = useSelector((state) => state.auth);
   const currentEmployeeId = user?._id || user?.id;
 
@@ -45,43 +44,55 @@ const EmployeeAttendanceTable = () => {
     dispatch(fetchMyAttendance({ page: 1, limit: recordsPerPage }));
   }, [dispatch, recordsPerPage]);
 
-//   // ==========================================
-//   // ✨ Socket: تحديث الجدول لايف عند البصمة ✨
-//   // ==========================================
-//   useEffect(() => {
-//     const socket = io("grad-project-hrms-production-7.up.railway.app", {
-//       withCredentials: true,
-//     });
+  useEffect(() => {
+    if (!user?.accessToken) return;
 
-//     const handleNewCheckin = (newRecord) => {
-//       // الباك إند بيبعت broadcast لكل الموظفين، فلازم نفلتر هنا
-//       if (newRecord.employeeId === currentEmployeeId) {
-//         dispatch(addNewMyAttendanceRecord(newRecord));
-//       }
-//     };
+    const socket = io("https://grad-project-hrms-production-7.up.railway.app", {
+      transports: ["websocket"],
+      auth: {
+        token: user.accessToken,
+      },
+    });
 
-//     socket.on("new_checkin", handleNewCheckin);
+    socket.on("new_checkin", (newRecord) => {
+      if (newRecord.employeeId === currentEmployeeId) {
+        dispatch(addNewMyAttendanceRecord(newRecord));
+      }
+    });
 
-//     return () => {
-//       socket.off("new_checkin", handleNewCheckin);
-//       socket.disconnect();
-//     };
-//   }, [dispatch, currentEmployeeId]);
-//   // ==========================================
+    return () => {
+      socket.off("new_checkin");
+      socket.disconnect();
+    };
+  }, [dispatch, currentEmployeeId, user?.accessToken]);
 
   const handlePageChange = (newPage) => {
     dispatch(fetchMyAttendance({ page: newPage, limit: recordsPerPage }));
   };
 
   const columns = [
-    { header: "Date", accessor: "date" },
+    {
+      header: "Date",
+      accessor: "date",
+      render: (row) => (
+        <span style={{ color: "var(--text-main)" }}>{row.date}</span>
+      ),
+    },
     {
       header: "Check In",
       accessor: "checkIn",
       render: (row) => {
-        if (!row.checkIn) return <span className="text-slate-500 text-xs">—</span>;
+        if (!row.checkIn)
+          return (
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+              —
+            </span>
+          );
         return (
-          <span className="text-slate-300 text-sm font-medium">
+          <span
+            className="text-sm font-medium"
+            style={{ color: "var(--text-main)" }}
+          >
             {new Date(row.checkIn).toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
@@ -96,21 +107,25 @@ const EmployeeAttendanceTable = () => {
       header: "Department",
       accessor: "department",
       render: (row) => (
-        <span className="text-slate-300 ">{row.employee?.department || "—"}</span>
+        <span style={{ color: "var(--text-main)" }}>
+          {row.employee?.department || "—"}
+        </span>
       ),
     },
     {
       header: "Job Type",
       accessor: "jobType",
       render: (row) => (
-        <span className="text-slate-300 ">{row.employee?.jobType || "—"}</span>
+        <span style={{ color: "var(--text-main)" }}>
+          {row.employee?.jobType || "—"}
+        </span>
       ),
     },
     {
       header: "Delay (min)",
       accessor: "delayMinutes",
       render: (row) => (
-        <span className="text-pink-400 ">
+        <span style={{ color: "var(--performance-poor-text, #ec4899)" }}>
           {row.delayMinutes != null ? `${row.delayMinutes} min` : "—"}
         </span>
       ),
