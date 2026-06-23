@@ -84,8 +84,7 @@ const PerformanceDetails = () => {
         </h1>
       </div>
 
-      {/* Top Cards */}
-      {/* التعديل الأول: أضفنا z-30 هنا لتأمين بيئة العرض العلوية بالكامل */}
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-30">
 
         {/* Overall Score Card */}
@@ -115,15 +114,12 @@ const PerformanceDetails = () => {
           </span>
         </BaseCard>
 
-        {/* KPIs Card */}
-        {/* التعديل الثاني: أضفنا !overflow-visible لكي نسمح للكاليندر بالخروج بحرية دون الاختفاء تحت الكارد */}
         <BaseCard padding="p-6" className="md:col-span-2 space-y-6 !overflow-visible relative z-40">
           <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: "var(--border-main)" }}>
             <h3 className="text-sm font-semibold" style={{ color: "var(--text-main)" }}>
               Current Period KPIs
             </h3>
             
-            {/* التعديل الثالث: إعطاء الحاوية الخارجية الخاصة بالكاليندر تموضعاً نسبياً مع أعلى z-index ممكن */}
             <div className="relative z-[50]">
               <ReusableCalendar
                 mode="range"

@@ -87,8 +87,6 @@ export default function AddProjectModal({ onClose, onSuccess }) {
 
   const handleSave = async () => {
     setLoading(true);
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const currentUserId = storedUser.id || storedUser._id;
     const data = new FormData();
 
     const formatDate = (dateStr) => {
@@ -102,7 +100,6 @@ export default function AddProjectModal({ onClose, onSuccess }) {
     data.append("general[avatar]", formData["avatar"] || "https://res.cloudinary.com/dh4qznqpd/image/upload/v1777762868/hrms_project_uploads/mbtwn24disxv0brmcpbs.jpg");
     data.append("general[name]", formData["name"] || "");
     data.append("general[description]", formData["description"] || "");
-    data.append("general[createdBy]", currentUserId);
     data.append("general[startDate]", formatDate(new Date()));
     data.append("general[deadline]", formatDate(formData["deadline"]));
     data.append("general[tag]", formData["tag"] || "UI Design");
