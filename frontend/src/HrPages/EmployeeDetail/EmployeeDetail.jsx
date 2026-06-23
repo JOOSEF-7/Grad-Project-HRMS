@@ -29,7 +29,9 @@ const EmployeeDetail = () => {
           >
             <ArrowLeft size={20} className="text-slate-400" />
           </button>
-          <h1 className="text-white text-xl font-semibold">Employee Detail</h1>
+          <h1 className="text-xl font-semibold" style={{ color: "var(--text-main)" }}>
+            Employee Detail
+          </h1>
           {loading && (
             <span className="text-xs text-cyan-400 ml-4 animate-pulse">
               Loading data...
