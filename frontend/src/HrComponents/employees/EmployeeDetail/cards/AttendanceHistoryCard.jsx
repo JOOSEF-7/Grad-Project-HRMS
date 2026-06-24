@@ -8,23 +8,51 @@ import RowActionMenu from "../../../../components/UI/RowActionMenu";
 import BaseCard from "../../../../components/UI/Card";
 import ReusableCalendar from "../../../../components/UI/ReusableCalendar";
 import { Eye, Trash2 } from "lucide-react";
-console.log("fetchAttendanceByEmployee:", fetchAttendanceByEmployee); // ← مش undefined؟
+
+const statusConfig = {
+  "On Time": {
+    bg: "var(--pill-green-bg)",
+    text: "var(--pill-green-text)",
+    border: "var(--pill-green-border)",
+  },
+  Late: {
+    bg: "var(--pill-blue-bg)",
+    text: "var(--pill-blue-text)",
+    border: "var(--pill-blue-border)",
+  },
+  Absent: {
+    bg: "var(--tab-inactive-bg)",
+    text: "var(--text-muted)",
+    border: "var(--border-main)",
+  },
+};
+
 const AttendanceBadge = ({ status }) => {
-  const styles = {
-    "On Time": "bg-emerald-500/15 text-emerald-400 border-emerald-400/40",
-    Late: "bg-sky-500/15 text-sky-400 border-sky-400/40",
-    Absent: "bg-slate-500/20 text-slate-400 border-slate-400/40",
+  const config = statusConfig[status] ?? {
+    bg: "var(--tab-inactive-bg)",
+    text: "var(--text-muted)",
+    border: "var(--border-main)",
   };
+
   return (
-    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${styles[status] || ""}`}>
-      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+    <span
+      className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border backdrop-blur-sm"
+      style={{
+        background: config.bg,
+        color: config.text,
+        borderColor: config.border,
+      }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full"
+        style={{ background: config.text }}
+      />
       {status}
     </span>
   );
 };
 
-const AttendanceHistoryCard = ({ employeeId }) => { 
-  
+const AttendanceHistoryCard = ({ employeeId }) => {
   const dispatch = useDispatch();
   const { attendanceList, pagination, selectedMonth, loading } = useSelector(
     (state) => state.attendance
@@ -38,19 +66,17 @@ const AttendanceHistoryCard = ({ employeeId }) => {
     const [year, month] = selectedMonth.split("-");
     return { month: parseInt(month), year: parseInt(year) };
   };
+
   const safePagination = pagination ?? {
-  currentPage: 1,
-  totalPages: 1,
-  totalRecords: 0,
-  limit: 10,
-};
+    currentPage: 1,
+    totalPages: 1,
+    totalRecords: 0,
+    limit: 10,
+  };
 
   useEffect(() => {
-   
     if (!employeeId) return;
     const { month, year } = getMonthYear();
-     
-
     dispatch(fetchAttendanceByEmployee({
       employeeId,
       page: 1,
@@ -76,17 +102,18 @@ const AttendanceHistoryCard = ({ employeeId }) => {
   };
 
   const handleRecordsPerPageChange = (newLimit) => {
-    setRecordsPerPage(newLimit); 
+    setRecordsPerPage(newLimit);
   };
 
   const columns = [
     { header: "Date", accessor: "date" },
-    { 
-      header: "Check In", 
+    {
+      header: "Check In",
       accessor: "checkIn",
-      render: (row) => row.checkIn 
-        ? new Date(row.checkIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) 
-        : "—"
+      render: (row) =>
+        row.checkIn
+          ? new Date(row.checkIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          : "—",
     },
     {
       header: "Status",
@@ -100,9 +127,10 @@ const AttendanceHistoryCard = ({ employeeId }) => {
         <div className="relative">
           <button
             onClick={() => setOpenMenuId(openMenuId === row._id ? null : row._id)}
-            className="p-2 text-slate-400 hover:text-slate-200"
+            className="p-2 transition-colors"
+            style={{ color: "var(--text-muted)" }}
           >
-            <EditIcon />
+            <EditIcon fontSize="small" />
           </button>
           <RowActionMenu
             isOpen={openMenuId === row._id}
@@ -128,8 +156,14 @@ const AttendanceHistoryCard = ({ employeeId }) => {
 
   return (
     <BaseCard padding="p-0">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 border-b border-slate-700/50">
-        <h3 className="text-white font-semibold text-lg">Attendant history</h3>
+      {/* Header */}
+      <div
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5"
+        style={{ borderBottom: "1px solid var(--border-main)" }}
+      >
+        <h3 className="font-semibold text-lg" style={{ color: "var(--text-main)" }}>
+          Attendance History
+        </h3>
         <ReusableCalendar
           mode="month"
           value={selectedMonth}
@@ -137,10 +171,12 @@ const AttendanceHistoryCard = ({ employeeId }) => {
         />
       </div>
 
+      {/* Table */}
       <div className={loading ? "opacity-50 pointer-events-none" : ""}>
         <DataTable columns={columns} data={attendanceList} />
       </div>
 
+      {/* Pagination */}
       <Pagination
         pagination={safePagination}
         handlePageChange={handlePageChange}

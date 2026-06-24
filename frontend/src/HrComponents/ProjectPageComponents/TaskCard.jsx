@@ -94,34 +94,7 @@ export default function TaskCard({ id, title, description, avatar, tag, priority
         </p>
       </div>
 
-      {/* Documents Section */}
-      {documents && documents.length > 0 && (
-        <div className="flex flex-wrap gap-2 pt-1">
-          {documents.map((doc, index) => {
-            const fileName = typeof doc === 'string' ? doc.split('/').pop() : (doc.name || `Document ${index + 1}`);
-            const fileUrl = typeof doc === 'string' ? doc : doc.url;
-            return (
-              <a
-                key={index}
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--border-main)',
-                  color: 'var(--text-muted)',
-                }}
-                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] transition-all max-w-full truncate hover:opacity-80"
-                title={fileName}
-              >
-                <FileText size={12} className="text-cyan-400 flex-shrink-0" />
-                <span className="truncate max-w-[140px]">{fileName}</span>
-              </a>
-            );
-          })}
-        </div>
-      )}
+      
 
       {/* Subtasks Section */}
       <div className="space-y-2 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
