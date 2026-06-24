@@ -41,7 +41,7 @@ export const getAllApplicantsWithFilters = asyncWraper(
                                 from: "jobs",
                                 localField: "jobId",
                                 foreignField: "_id",
-                                as: "jobDetails", 
+                                as: "jobDetails",
                             },
                         },
                         {
@@ -165,7 +165,6 @@ export const createApplicant = asyncWraper(async (req, res, next) => {
         req.body.professionalInfo?.skills || []
     );
 
-    
     const jobExp = job.requiredExperienceYears || 0;
     const applicantExp =
         parseFloat(req.body.professionalInfo?.yearsOfExperience) || 0;
@@ -192,14 +191,13 @@ export const createApplicant = asyncWraper(async (req, res, next) => {
         const outputName = session.outputNames[0];
 
         atsScore = Math.round(results[outputName].data[0]);
-        // التأكد من بقاء الرقم في النطاق السليم بين 0 و 100
+
         atsScore = Math.max(0, Math.min(100, atsScore));
     } catch (error) {
         console.error("ONNX ML Inference Error:", error);
-        atsScore = 50; // سكور افتراضي آمن لحماية استقرار التطبيق في حالة أي خطأ تقني
+        atsScore = 50;
     }
 
-    // 💾 ج. مرحلة حفظ البيانات بالـ Score المستخرج لايف والـ Insights
     const newApplicant = new Applicant({
         ...req.body,
         jobId,
@@ -295,7 +293,6 @@ export const onboardApplicant = asyncWraper(async (req, res, next) => {
     const applicantId = req.params.id;
     const { general, experience, employee } = req.body;
 
-    // 1. نتأكد إن المتقدم موجود
     const applicant = await Applicant.findById(applicantId);
     if (!applicant) {
         if (general?.avatar) await deleteFromCloudinary(general.avatar);
@@ -315,7 +312,6 @@ export const onboardApplicant = asyncWraper(async (req, res, next) => {
         );
     }
 
-    // 2. التحقق من وجود المستخدم (Email)
     const oldUser = await User.findOne({ "general.email": general.email });
     if (oldUser) {
         if (general?.avatar) await deleteFromCloudinary(general.avatar);
@@ -328,7 +324,6 @@ export const onboardApplicant = asyncWraper(async (req, res, next) => {
         );
     }
 
-    // 3. التحقق من الـ RFID
     if (general?.rfidTag) {
         const oldRfid = await User.findOne({
             "general.rfidTag": general.rfidTag,
@@ -346,7 +341,6 @@ export const onboardApplicant = asyncWraper(async (req, res, next) => {
     }
 
     try {
-        // 4. تجهيز كلمة السر والموظف الجديد
         const generatedPassword = crypto.randomBytes(4).toString("hex");
         const hashedPassword = await bcrypt.hash(generatedPassword, 10);
         general.password = hashedPassword;
@@ -354,11 +348,9 @@ export const onboardApplicant = asyncWraper(async (req, res, next) => {
         const newUser = new User({ general, experience, employee });
         await newUser.save();
 
-        // 5. تحديث حالة المتقدم
         applicant.status = "Hired";
         await applicant.save();
 
-        // 6. إرسال الإيميل
         try {
             await sendEmail({
                 email: newUser.general.email,
@@ -366,7 +358,6 @@ export const onboardApplicant = asyncWraper(async (req, res, next) => {
                 message: `Dear ${newUser.general.firstName} ${newUser.general.lastName},\n\nYour account has been successfully created in the company's HR system.\n\nHere are your login credentials:\nEmail: ${newUser.general.email}\nTemporary Password: ${generatedPassword}\n\nPlease log in and change your password as soon as possible.\n\nBest Regards,\nHR Department`,
             });
         } catch (emailError) {
-            // لو الإيميل فشل، نمسح اليوزر ونرجع الأبليكانت لحالته عشان الـ HR يعيد المحاولة
             await User.findByIdAndDelete(newUser._id);
             applicant.status = "Interviewing";
             await applicant.save();
@@ -503,12 +494,12 @@ export const searchApplicants = asyncWraper(async (req, res, next) => {
                 "personalInfo.experienceLevel": 1,
                 "personalInfo.avatar": 1,
                 status: 1,
-                atsScore: 1, // إرفاق حقل السكور في نتائج البحث
+                atsScore: 1,
                 createdAt: 1,
             },
         },
         {
-            $sort: { atsScore: -1 }, // ترتيب نتائج البحث تنازلياً للأجدر فالأقل
+            $sort: { atsScore: -1 },
         },
     ]);
 

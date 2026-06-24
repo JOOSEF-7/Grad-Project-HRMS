@@ -4,33 +4,44 @@
  * Browser "Save as PDF" = download.
  */
 export function generatePayslip(data) {
-  const emp      = data.employee ?? {};
+  const emp = data.employee ?? {};
   const fullName = `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim();
-  const bonus    = data.netSalary - (data.baseSalary - data.deductions);
+  const bonus = data.netSalary - (data.baseSalary - data.deductions);
 
-  const start    = new Date(data.year, data.month - 1, 1);
-  const end      = new Date(data.year, data.month, 0);
-  const fmtDate  = (d) => d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" });
-  const period   = `${fmtDate(start)} — ${fmtDate(end)}`;
-  const monthName = start.toLocaleString("en-US", { month: "long", year: "numeric" });
+  const start = new Date(data.year, data.month - 1, 1);
+  const end = new Date(data.year, data.month, 0);
+  const fmtDate = (d) =>
+    d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+    });
+  const period = `${fmtDate(start)} — ${fmtDate(end)}`;
+  const monthName = start.toLocaleString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   const statusColors = {
-    Paid:    { bg: "#d1fae5", text: "#065f46" },
+    Paid: { bg: "#d1fae5", text: "#065f46" },
     Pending: { bg: "#dbeafe", text: "#1e40af" },
-    Draft:   { bg: "#f1f5f9", text: "#475569" },
+    Draft: { bg: "#f1f5f9", text: "#475569" },
   };
   const sc = statusColors[data.status] ?? statusColors.Draft;
 
-  const avatarUrl = emp.avatar ||
+  const avatarUrl =
+    emp.avatar ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0168B1&color=fff&size=80&bold=true&rounded=true`;
 
-  const bonusRow = bonus > 0
-    ? `<tr><td class="label-cell">Performance Bonus</td><td class="positive">+$${bonus.toLocaleString()}</td></tr>`
-    : "";
+  const bonusRow =
+    bonus > 0
+      ? `<tr><td class="label-cell">Performance Bonus</td><td class="positive">+$${bonus.toLocaleString()}</td></tr>`
+      : "";
 
-  const deductionRow = data.deductions > 0
-    ? `<tr><td class="label-cell">Deductions</td><td class="negative">-$${data.deductions.toLocaleString()}</td></tr>`
-    : "";
+  const deductionRow =
+    data.deductions > 0
+      ? `<tr><td class="label-cell">Deductions</td><td class="negative">-$${data.deductions.toLocaleString()}</td></tr>`
+      : "";
 
   const html = `<!DOCTYPE html>
 <html lang="en">
